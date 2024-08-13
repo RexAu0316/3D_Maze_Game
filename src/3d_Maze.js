@@ -50,7 +50,7 @@ window.initGame = (React, assetsUrl) => {
 
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [0, 0.5, 0],
+      position: [0, 0.5, 0], // Centered position
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
@@ -69,37 +69,22 @@ window.initGame = (React, assetsUrl) => {
 
   function Maze() {
     const wallThickness = 1; // Thickness of the walls
-    const squareSize = 10; // Size of the outer square
-    const mazeLayout = [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1]
+    const squareSize = 20; // Size of the outer square
+    const wallPositions = [
+      // Bottom wall
+      { position: [0, 0, -squareSize / 2], scale: [squareSize, wallThickness, wallThickness] },
+      // Top wall
+      { position: [0, 0, squareSize / 2], scale: [squareSize, wallThickness, wallThickness] },
+      // Left wall
+      { position: [-squareSize / 2, 0, 0], scale: [wallThickness, wallThickness, squareSize] },
+      // Right wall
+      { position: [squareSize / 2, 0, 0], scale: [wallThickness, wallThickness, squareSize] }
     ];
-
-    const walls = [];
-    const cellSize = squareSize / mazeLayout.length; // Calculate the size of each cell
-
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) {
-          walls.push({
-            position: [
-              colIndex * cellSize - squareSize / 2 + cellSize / 2, // Center the wall
-              0,
-              rowIndex * cellSize - squareSize / 2 + cellSize / 2 // Center the wall
-            ],
-            scale: [cellSize, wallThickness, wallThickness] // Wall size for correct height
-          });
-        }
-      });
-    });
 
     return React.createElement(
       React.Fragment,
       null,
-      walls.map((wall, index) =>
+      wallPositions.map((wall, index) =>
         React.createElement(MazeWall, {
           key: index,
           position: wall.position,
