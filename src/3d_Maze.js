@@ -46,17 +46,6 @@ window.initGame = (React, assetsUrl) => {
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
-
-    
-          
-            
-    
-
-          
-          Expand Down
-    
-    
-  
   }
   function Camera() {
     const { camera } = useThree();
