@@ -50,7 +50,7 @@ window.initGame = (React, assetsUrl) => {
 
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [8.5, 0.5, -8.5], // Centered position
+      position: [8.0, 0.5, -8.5], // Centered position
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
