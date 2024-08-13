@@ -34,7 +34,7 @@ window.initGame = (React, assetsUrl) => {
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   ];
 
-    return React.createElement(
+   return React.createElement(
       'group',
       null,
       mazeLayout.map((row, y) =>
