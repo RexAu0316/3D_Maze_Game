@@ -73,8 +73,7 @@ window.initGame = (React, assetsUrl) => {
     
     const wall =[
       {position: [0, 0, -5], scale: [10, 1, 1] }
-    ]
-
+    ];
     
    return React.createElement(
     React.Fragment,
