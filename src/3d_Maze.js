@@ -2,7 +2,6 @@ window.initGame = (React, assetsUrl) => {
   const { useEffect, useRef } = React;
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
-
   const MazeWall = ({ position, scale }) => {
     return React.createElement('mesh', {
       position: position,
@@ -11,30 +10,24 @@ window.initGame = (React, assetsUrl) => {
       material: new THREE.MeshStandardMaterial({ color: 'gray' })
     });
   };
-
   function Player() {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
-
     useEffect(() => {
       const handleKeyDown = (event) => {
         keys.current[event.key] = true;
       };
-
       const handleKeyUp = (event) => {
         keys.current[event.key] = false;
       };
-
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
-
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
       };
     }, []);
-
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -42,7 +35,6 @@ window.initGame = (React, assetsUrl) => {
         if (keys.current['ArrowDown']) direction.z += speed;
         if (keys.current['ArrowLeft']) direction.x -= speed;
         if (keys.current['ArrowRight']) direction.x += speed;
-
         // Update position
         playerRef.current.position.add(direction);
       }
@@ -54,19 +46,26 @@ window.initGame = (React, assetsUrl) => {
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
-  }
 
+    
+          
+            
+    
+
+          
+          Expand Down
+    
+    
+  
+  }
   function Camera() {
     const { camera } = useThree();
-
     useEffect(() => {
-      camera.position.set(0, 10, 10); // Adjusted for maze size
+      camera.position.set(0, 20, 20); // Adjusted for maze size
       camera.lookAt(0, 0, 0);
     }, [camera]);
-
     return null;
   }
-
   function Maze() {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
@@ -91,9 +90,7 @@ window.initGame = (React, assetsUrl) => {
       [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
-
     const wallPositions = [];
-
     mazeLayout.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) { // Wall
@@ -108,7 +105,6 @@ window.initGame = (React, assetsUrl) => {
         }
       });
     });
-
     return React.createElement(
       React.Fragment,
       null,
@@ -121,7 +117,6 @@ window.initGame = (React, assetsUrl) => {
       )
     );
   }
-
   function MazeRunnerGame() {
     return React.createElement(
       React.Fragment,
@@ -133,8 +128,6 @@ window.initGame = (React, assetsUrl) => {
       React.createElement(Player)
     );
   }
-
   return MazeRunnerGame;
 };
-
 console.log('3D Maze Runner game script loaded');
