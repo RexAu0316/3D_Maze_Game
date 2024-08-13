@@ -60,7 +60,7 @@ window.initGame = (React, assetsUrl) => {
     const { camera } = useThree();
 
     useEffect(() => {
-      camera.position.set(0, 10, 10); // Adjusted for maze size
+      camera.position.set(0, 20, 20); // Adjusted for maze size
       camera.lookAt(0, 0, 0);
     }, [camera]);
 
