@@ -82,7 +82,17 @@ window.initGame = (React, assetsUrl) => {
       { position: [-5, 0, 0], scale: [1, 1, 10] },
       { position: [0, 0, 5], scale: [10, 1, 1] },
       { position: [-2.5, 0, -2.5], scale: [1, 1, 5] },
-      { position: [2.5, 0, -2.5], scale: [1, 1, 5] }
+      { position: [2.5, 0, -2.5], scale: [1, 1, 5] },
+      { position: [0, 0, -1], scale: [10, 1, 1] },
+      { position: [-3, 0, -3], scale: [1, 1, 5] },
+      { position: [3, 0, -3], scale: [1, 1, 5] },
+      { position: [-4, 0, 2], scale: [1, 1, 5] },
+      { position: [4, 0, 2], scale: [1, 1, 5] },
+      { position: [1, 0, -4], scale: [1, 1, 3] },
+      { position: [-1, 0, -4], scale: [1, 1, 3] },
+      { position: [0, 0, -3], scale: [3, 1, 1] },
+      { position: [0, 0, -2], scale: [1, 1, 1] },
+      { position: [0, 0, -1], scale: [1, 1, 1] }
     ];
 
     return React.createElement(
