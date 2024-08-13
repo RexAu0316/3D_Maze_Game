@@ -1,6 +1,6 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef } = React;
+  const { useFrame } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   const MazeModel = React.memo(function MazeModel({ position = [0, 0, 0], scale = [1, 1, 1] }) {
@@ -23,18 +23,35 @@ window.initGame = (React, assetsUrl) => {
     );
   };
 
-  function Maze() {
-  const mazeLayout = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-    [1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  ];
+  const isCollision = (nextPosition) => {
+    const mazeLayout = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ];
 
-   return React.createElement(
+    const x = Math.floor(nextPosition.x);
+    const z = -Math.floor(nextPosition.z); // Invert z for correct maze indexing
+
+    return mazeLayout[z] && mazeLayout[z][x] === 1; // Checking for a wall
+  };
+
+  function Maze() {
+    const mazeLayout = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ];
+
+    return React.createElement(
       'group',
       null,
       mazeLayout.map((row, y) =>
@@ -46,29 +63,8 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Player() {
-  const playerRef = useRef();
-  const speed = 0.1;
-  const [position, setPosition] = useState([0, 0.5, 0]);
-
-  useFrame(() => {
-    if (playerRef.current) {
-      const movement = new THREE.Vector3();
-
-      // Use arrow keys for movement
-      if (keyboardState.current['ArrowUp']) movement.z -= speed; // Up arrow
-      if (keyboardState.current['ArrowDown']) movement.z += speed; // Down arrow
-      if (keyboardState.current['ArrowLeft']) movement.x -= speed; // Left arrow
-      if (keyboardState.current['ArrowRight']) movement.x += speed; // Right arrow
-
-      playerRef.current.position.add(movement);
-    }
-  });
-
-  return React.createElement(PlayerModel, { ref: playerRef, position });
-}
-
-  const Game = () => {
-    const [collectibles, setCollectibles] = useState([]);
+    const playerRef = useRef(new THREE.Vector3(0, 0.5, 0)); // Initialize position
+    const speed = 0.1;
     const keyboardState = useRef({});
 
     useEffect(() => {
@@ -83,6 +79,37 @@ window.initGame = (React, assetsUrl) => {
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
 
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
+    useFrame(() => {
+      if (playerRef.current) {
+        const movement = new THREE.Vector3();
+
+        if (keyboardState.current['ArrowUp']) movement.z -= speed;
+        if (keyboardState.current['ArrowDown']) movement.z += speed;
+        if (keyboardState.current['ArrowLeft']) movement.x -= speed;
+        if (keyboardState.current['ArrowRight']) movement.x += speed;
+
+        const nextPosition = playerRef.current.clone().add(movement);
+
+        // Check for collisions before updating position
+        if (!isCollision(nextPosition)) {
+          playerRef.current.copy(nextPosition); // Update position if no collision
+        }
+      }
+    });
+
+    return React.createElement(PlayerModel, { position: playerRef.current.toArray() });
+  }
+
+  const Game = () => {
+    const [collectibles, setCollectibles] = useState([]);
+
+    useEffect(() => {
       // Initialize collectibles positions
       const newCollectibles = [
         [2, 0.5, -1],
@@ -90,11 +117,6 @@ window.initGame = (React, assetsUrl) => {
         [-1, 0.5, -3],
       ];
       setCollectibles(newCollectibles);
-
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
     }, []);
 
     const collectItem = (position) => {
