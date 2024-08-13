@@ -46,25 +46,26 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Player() {
-    const playerRef = useRef();
-    const speed = 0.1;
-    const [position, setPosition] = useState([0, 0.5, 0]);
+  const playerRef = useRef();
+  const speed = 0.1;
+  const [position, setPosition] = useState([0, 0.5, 0]);
 
-    useFrame(() => {
-      if (playerRef.current) {
-        const movement = new THREE.Vector3();
+  useFrame(() => {
+    if (playerRef.current) {
+      const movement = new THREE.Vector3();
 
-        if (keyboardState.current['KeyW']) movement.z -= speed;
-        if (keyboardState.current['KeyS']) movement.z += speed;
-        if (keyboardState.current['KeyA']) movement.x -= speed;
-        if (keyboardState.current['KeyD']) movement.x += speed;
+      // Use arrow keys for movement
+      if (keyboardState.current['ArrowUp']) movement.z -= speed; // Up arrow
+      if (keyboardState.current['ArrowDown']) movement.z += speed; // Down arrow
+      if (keyboardState.current['ArrowLeft']) movement.x -= speed; // Left arrow
+      if (keyboardState.current['ArrowRight']) movement.x += speed; // Right arrow
 
-        playerRef.current.position.add(movement);
-      }
-    });
+      playerRef.current.position.add(movement);
+    }
+  });
 
-    return React.createElement(PlayerModel, { ref: playerRef, position });
-  }
+  return React.createElement(PlayerModel, { ref: playerRef, position });
+}
 
   const Game = () => {
     const [collectibles, setCollectibles] = useState([]);
