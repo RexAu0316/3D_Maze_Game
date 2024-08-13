@@ -3,8 +3,25 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  // Custom Hook for handling ball movement
-  function useBallMovement(ballRef) {
+  const MazeWall = ({ position, scale }) => {
+    return React.createElement('mesh', {
+      position: position,
+      scale: scale,
+      geometry: new THREE.BoxGeometry(1, 1, 1),
+      material: new THREE.MeshStandardMaterial({ color: 'gray' })
+    });
+  };
+
+  const Collectible = ({ position }) => {
+    return React.createElement('mesh', {
+      position: position,
+      geometry: new THREE.SphereGeometry(0.2, 32, 32),
+      material: new THREE.MeshStandardMaterial({ color: 'gold' })
+    });
+  };
+
+  function Player() {
+    const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
 
@@ -27,62 +44,29 @@ window.initGame = (React, assetsUrl) => {
     }, []);
 
     useFrame(() => {
-      if (ballRef.current) {
+      if (playerRef.current) {
         const direction = new THREE.Vector3();
         if (keys.current['ArrowUp']) direction.z -= speed;
         if (keys.current['ArrowDown']) direction.z += speed;
         if (keys.current['ArrowLeft']) direction.x -= speed;
         if (keys.current['ArrowRight']) direction.x += speed;
 
-        ballRef.current.position.add(direction);
+        // Update position
+        playerRef.current.position.add(direction);
       }
     });
-  }
-
-  const BallModel = React.memo(({ position = [0, 0, 0] }) => {
-    const geometry = useMemo(() => new THREE.SphereGeometry(0.5, 32, 32), []);
-    const material = useMemo(() => new THREE.MeshStandardMaterial({ color: 'blue' }), []);
 
     return React.createElement('mesh', {
-      geometry: geometry,
-      material: material,
-      position: position
+      ref: playerRef,
+      position: [0, 0.5, 0],
+      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
+      material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
-  });
-
-  function Ball() {
-    const ballRef = useRef();
-    useBallMovement(ballRef);
-
-    return React.createElement(BallModel, { ref: ballRef });
-  }
-
-  function Maze() {
-    const walls = [
-      { position: [0, 0, -5], scale: [10, 1, 1] },
-      { position: [5, 0, 0], scale: [1, 1, 10] },
-      { position: [-5, 0, 0], scale: [1, 1, 10] },
-      { position: [0, 0, 5], scale: [10, 1, 1] },
-    ];
-
-    return React.createElement(
-      React.Fragment,
-      null,
-      walls.map((wall, index) =>
-        React.createElement('mesh', {
-          key: index,
-          position: wall.position,
-          scale: wall.scale,
-          geometry: new THREE.BoxGeometry(),
-          material: new THREE.MeshStandardMaterial({ color: 'gray' })
-        })
-      )
-    );
   }
 
   function Camera() {
     const { camera } = useThree();
-    
+
     useEffect(() => {
       camera.position.set(0, 5, 10);
       camera.lookAt(0, 0, 0);
@@ -91,7 +75,47 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
-  function MazeGame() {
+  function Maze() {
+    const walls = [
+      { position: [0, 0, -5], scale: [10, 1, 1] },
+      { position: [5, 0, 0], scale: [1, 1, 10] },
+      { position: [-5, 0, 0], scale: [1, 1, 10] },
+      { position: [0, 0, 5], scale: [10, 1, 1] },
+      { position: [-2.5, 0, -2.5], scale: [1, 1, 5] },
+      { position: [2.5, 0, -2.5], scale: [1, 1, 5] }
+    ];
+
+    return React.createElement(
+      React.Fragment,
+      null,
+      walls.map((wall, index) =>
+        React.createElement(MazeWall, {
+          key: index,
+          position: wall.position,
+          scale: wall.scale
+        })
+      )
+    );
+  }
+
+  function MazeRunnerGame() {
+    const [collectibles, setCollectibles] = useState([]);
+
+    useEffect(() => {
+      // Generate random collectibles
+      const newCollectibles = [];
+      for (let i = 0; i < 5; i++) {
+        newCollectibles.push({
+          position: [
+            (Math.random() - 0.5) * 8,
+            0.2,
+            (Math.random() - 0.5) * 8
+          ]
+        });
+      }
+      setCollectibles(newCollectibles);
+    }, []);
+
     return React.createElement(
       React.Fragment,
       null,
@@ -99,11 +123,17 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze),
-      React.createElement(Ball)
+      React.createElement(Player),
+      collectibles.map((collectible, index) =>
+        React.createElement(Collectible, {
+          key: index,
+          position: collectible.position
+        })
+      )
     );
   }
 
-  return MazeGame;
+  return MazeRunnerGame;
 };
 
-console.log('3D Maze game script loaded');
+console.log('3D Maze Runner game script loaded');
