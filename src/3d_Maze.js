@@ -1,6 +1,6 @@
-window.initSimpleMazeGame = (React, assetsUrl) => {
-  const { useRef } = React;
-  const { useFrame } = window.ReactThreeFiber;
+window.initMazeRunner = (React, assetsUrl) => {
+  const { useState, useEffect, useRef, Suspense, useMemo } = React;
+  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   const Wall = ({ position, scale }) => {
@@ -28,26 +28,47 @@ window.initSimpleMazeGame = (React, assetsUrl) => {
     );
   }
 
-  function MazeGame() {
-    const cameraRef = useRef();
+  function Player() {
+    const playerRef = useRef();
+    const { camera } = useThree();
 
-    // Set the camera position to get an overview of the maze
     useFrame(() => {
-      if (cameraRef.current) {
-        cameraRef.current.position.set(0, 5, 10); // Change Y to 5 and Z to 10 for an overview
-        cameraRef.current.lookAt(0, 0, 0); // Look at the center of the maze
+      if (playerRef.current) {
+        // Update player position based on camera position
+        playerRef.current.position.copy(camera.position);
       }
     });
 
+    return React.createElement('mesh', {
+      ref: playerRef,
+      position: [0, 1, 5],
+      geometry: React.createElement('sphereGeometry', { args: [0.5, 32, 32] }),
+      material: React.createElement('meshStandardMaterial', { color: 'blue' }),
+    });
+  }
+
+  function Camera() {
+    const { camera } = useThree();
+
+    useEffect(() => {
+      camera.position.set(0, 5, 10); // Adjust camera position
+      camera.lookAt(0, 0, 0); // Look at the center of the maze
+    }, [camera]);
+
+    return null;
+  }
+
+  function MazeRunner() {
     return React.createElement(React.Fragment, null,
+      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement('perspectiveCamera', { ref: cameraRef }),
-      React.createElement(Maze)
+      React.createElement(Maze),
+      React.createElement(Player)
     );
   }
 
-  return MazeGame;
+  return MazeRunner;
 };
 
-console.log('3D Simple Maze game structure loaded');
+console.log('3D Maze Runner game script loaded');
