@@ -70,15 +70,17 @@ window.initGame = (React, assetsUrl) => {
   function Maze() {
     const wallThickness = 1; // Thickness of the walls
     const squareSize = 20; // Size of the outer square
+    const wallHeight = 1; // Height of the walls
+
     const wallPositions = [
       // Bottom wall
-      { position: [0, 0, -squareSize / 2], scale: [squareSize, wallThickness, wallThickness] },
+      { position: [0, wallHeight / 2, -squareSize / 2], scale: [squareSize, wallHeight, wallThickness] },
       // Top wall
-      { position: [0, 0, squareSize / 2], scale: [squareSize, wallThickness, wallThickness] },
+      { position: [0, wallHeight / 2, squareSize / 2], scale: [squareSize, wallHeight, wallThickness] },
       // Left wall
-      { position: [-squareSize / 2, 0, 0], scale: [wallThickness, wallThickness, squareSize] },
+      { position: [-squareSize / 2, wallHeight / 2, 0], scale: [wallThickness, wallHeight, squareSize] },
       // Right wall
-      { position: [squareSize / 2, 0, 0], scale: [wallThickness, wallThickness, squareSize] }
+      { position: [squareSize / 2, wallHeight / 2, 0], scale: [wallThickness, wallHeight, squareSize] }
     ];
 
     return React.createElement(
