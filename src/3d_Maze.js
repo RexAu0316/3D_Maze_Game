@@ -1,5 +1,5 @@
-window.initMazeGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense } = React;
+window.initDifficultMazeGame = (React, assetsUrl) => {
+  const { useRef } = React;
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
@@ -49,11 +49,18 @@ window.initMazeGame = (React, assetsUrl) => {
 
   function Maze() {
     return React.createElement(React.Fragment, null,
-      React.createElement(Wall, { position: [0, 0, -5], scale: [10, 1, 0.5] }),
-      React.createElement(Wall, { position: [0, 0, 5], scale: [10, 1, 0.5] }),
-      React.createElement(Wall, { position: [-5, 0, 0], scale: [0.5, 1, 10] }),
-      React.createElement(Wall, { position: [5, 0, 0], scale: [0.5, 1, 10] }),
-      React.createElement(Wall, { position: [0, 0, 0], scale: [1, 1, 1] }) // Add more walls as needed
+      // Walls creating a more complex maze layout
+      React.createElement(Wall, { position: [0, 0, 0], scale: [1, 1, 10] }), // Center wall
+      React.createElement(Wall, { position: [-5, 0, -2], scale: [10, 1, 0.5] }), // Horizontal wall
+      React.createElement(Wall, { position: [-3, 0, 2], scale: [3, 1, 0.5] }), // Small vertical wall
+      React.createElement(Wall, { position: [-1, 0, 0], scale: [1, 1, 3] }), // Short wall
+      React.createElement(Wall, { position: [3, 0, -2], scale: [3, 1, 0.5] }), // Wall on the right
+      React.createElement(Wall, { position: [-3, 0, -4], scale: [0.5, 1, 4] }), // Left vertical wall
+      React.createElement(Wall, { position: [-1, 0, -6], scale: [3, 1, 0.5] }), // Bottom wall
+      React.createElement(Wall, { position: [5, 0, -4], scale: [0.5, 1, 4] }), // Right vertical wall
+      React.createElement(Wall, { position: [2, 0, -6], scale: [3, 1, 0.5] }), // Another bottom wall
+      React.createElement(Wall, { position: [1, 0, -1], scale: [0.5, 1, 2] }), // Small wall in the middle
+      React.createElement(Wall, { position: [0, 0, -3], scale: [3, 1, 0.5] }) // Another horizontal wall
     );
   }
 
@@ -69,4 +76,4 @@ window.initMazeGame = (React, assetsUrl) => {
   return MazeGame;
 };
 
-console.log('3D Maze game script loaded');
+console.log('3D Difficult Maze game script loaded');
