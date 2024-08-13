@@ -60,7 +60,7 @@ window.initGame = (React, assetsUrl) => {
     const { camera } = useThree();
 
     useEffect(() => {
-      camera.position.set(0, 5, 10);
+      camera.position.set(0, 10, 15);
       camera.lookAt(0, 0, 0);
     }, [camera]);
 
@@ -71,11 +71,15 @@ window.initGame = (React, assetsUrl) => {
     const wallThickness = 1; // Thickness of the walls
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
-      [1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1],
-      [0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
 
     const wallPositions = [];
