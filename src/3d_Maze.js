@@ -95,14 +95,16 @@ window.initGame = (React, assetsUrl) => {
     const wallPositions = [];
 
     mazeLayout.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
-      if (cell === 1) { // Wall
-        const position = [
-          colIndex - mazeLayout[0].length / 2 + 0.5,
-          wallHeight / 2,
-          rowIndex - mazeLayout.length / 2 + 0.5,
-        ];
-        wallPositions.push(position);
+      row.forEach((cell, colIndex) => {
+        if (cell === 1) { // Wall
+          wallPositions.push({
+            position: [
+              colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
+              wallHeight / 2,
+              rowIndex - mazeLayout.length / 2 + 0.5,
+            ],
+            scale: [1, wallHeight, 1]
+          });
         }
       });
     });
