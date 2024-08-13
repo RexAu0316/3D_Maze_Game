@@ -78,17 +78,22 @@ window.initGame = (React, assetsUrl) => {
   function Maze() {
     const walls = [
       // Horizontal walls
-      const walls = [
       { position: [0, 0, 5], scale: [10, 1, 1] }, // Top
       { position: [0, 0, -5], scale: [10, 1, 1] }, // Bottom
       { position: [-5, 0, 0], scale: [1, 1, 10] }, // Left
       { position: [5, 0, 0], scale: [1, 1, 10] }, // Right
       { position: [0, 0, 4], scale: [4, 1, 1] }, // Wall 1
-      { position: [-3, 0, 2], scale: [1, 1, 2] }, // Wall 2
-      { position: [3, 0, 2], scale: [1, 1, 2] }, // Wall 3
-      { position: [0, 0, 1], scale: [2, 1, 1] },
-      // Add more walls as needed to match the layout
-];
+      { position: [2, 0, 3], scale: [1, 1, 2] }, // Wall 2
+      { position: [0, 0, 2], scale: [2, 1, 1] }, // Wall 3
+      { position: [-2, 0, 1], scale: [1, 1, 2] }, // Wall 4
+      { position: [2, 0, 1], scale: [1, 1, 2] }, // Wall 5
+      { position: [0, 0, 0], scale: [1, 1, 1] }, // Wall 6
+      { position: [-3, 0, -1], scale: [1, 1, 3] }, // Wall 7
+      { position: [3, 0, -1], scale: [1, 1, 3] }, // Wall 8
+      { position: [0, 0, -2], scale: [1, 1, 1] }, // Wall 9
+      { position: [-1, 0, -3], scale: [1, 1, 1] }, // Wall 10
+      { position: [1, 0, -3], scale: [1, 1, 1] }, // Wall 11
+      { position: [0, 0, -4], scale: [2, 1, 1] }  // Wall 12
     ];
 
     return React.createElement(
