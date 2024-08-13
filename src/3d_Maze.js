@@ -86,7 +86,7 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
-  function Maze() {
+  function Maze({ walls }) {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -111,47 +111,49 @@ window.initGame = (React, assetsUrl) => {
       [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
 
-    const wallPositions = [];
+   const wallPositions = [];
 
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) { // Wall
-          wallPositions.push({
-            position: [
-              colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
-              wallHeight / 2,
-              rowIndex - mazeLayout.length / 2 + 0.5,
-            ],
-            scale: [1, wallHeight, 1]
-          });
-        }
-      });
+  mazeLayout.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (cell === 1) { // Wall
+        const wallPosition = [
+          colIndex - mazeLayout[0].length / 2 + 0.5,
+          wallHeight / 2,
+          rowIndex - mazeLayout.length / 2 + 0.5,
+        ];
+        const wallScale = [1, wallHeight, 1];
+        wallPositions.push({ position: wallPosition, scale: wallScale });
+        walls.push({ position: wallPosition, scale: wallScale }); // Store wall for Player collision
+      }
     });
+  });
 
-    return React.createElement(
-      React.Fragment,
-      null,
-      wallPositions.map((wall, index) =>
-        React.createElement(MazeWall, {
-          key: index,
-          position: wall.position,
-          scale: wall.scale
-        })
-      )
-    );
-  }
+  return React.createElement(
+    React.Fragment,
+    null,
+    wallPositions.map((wall, index) =>
+      React.createElement(MazeWall, {
+        key: index,
+        position: wall.position,
+        scale: wall.scale
+      })
+    )
+  );
+}
 
   function MazeRunnerGame() {
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(Camera),
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze),
-      React.createElement(Player)
-    );
-  }
+  const wallData = []; // Store wall data for collision detection
+
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(Camera),
+    React.createElement('ambientLight', { intensity: 0.5 }),
+    React.createElement('pointLight', { position: [10, 10, 10] }),
+    React.createElement(Maze, { walls: wallData }), // Pass walls data to Maze
+    React.createElement(Player, { walls: wallData }) // Pass walls data to Player
+  );
+}
 
   return MazeRunnerGame;
 };
