@@ -68,7 +68,22 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Maze() {
-   return null;
+    const wall =[
+      {position: [0, 0, -5], scale: [10, 1, 1] }
+    ]
+
+    
+   return React.createElement(
+    React.Fragment,
+    null,
+    walls.map((wall, index) =>
+      React.createElement(MazeWall, {
+        key: index,
+        position: wall.position,
+        scale: wall.scale
+      })
+    )
+  );
 }
 
   function MazeRunnerGame() {
