@@ -3,7 +3,43 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  const BallModel = React.memo(function BallModel({ position = [0, 0, 0] }) {
+  // Custom Hook for handling ball movement
+  function useBallMovement(ballRef) {
+    const speed = 0.1;
+    const keys = useRef({});
+
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        keys.current[event.key] = true;
+      };
+
+      const handleKeyUp = (event) => {
+        keys.current[event.key] = false;
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
+    useFrame(() => {
+      if (ballRef.current) {
+        const direction = new THREE.Vector3();
+        if (keys.current['ArrowUp']) direction.z -= speed;
+        if (keys.current['ArrowDown']) direction.z += speed;
+        if (keys.current['ArrowLeft']) direction.x -= speed;
+        if (keys.current['ArrowRight']) direction.x += speed;
+
+        ballRef.current.position.add(direction);
+      }
+    });
+  }
+
+  const BallModel = React.memo(({ position = [0, 0, 0] }) => {
     const geometry = useMemo(() => new THREE.SphereGeometry(0.5, 32, 32), []);
     const material = useMemo(() => new THREE.MeshStandardMaterial({ color: 'blue' }), []);
 
@@ -16,27 +52,12 @@ window.initGame = (React, assetsUrl) => {
 
   function Ball() {
     const ballRef = useRef();
-    const { camera } = useThree();
-    const speed = 0.1;
-
-    useFrame(() => {
-      if (ballRef.current) {
-        const direction = new THREE.Vector3();
-        if (keys['ArrowUp']) direction.z -= speed;
-        if (keys['ArrowDown']) direction.z += speed;
-        if (keys['ArrowLeft']) direction.x -= speed;
-        if (keys['ArrowRight']) direction.x += speed;
-
-        ballRef.current.position.add(direction);
-        camera.position.copy(ballRef.current.position).setY(camera.position.y);
-      }
-    });
+    useBallMovement(ballRef);
 
     return React.createElement(BallModel, { ref: ballRef });
   }
 
   function Maze() {
-    // Maze walls can be defined here
     const walls = [
       { position: [0, 0, -5], scale: [10, 1, 1] },
       { position: [5, 0, 0], scale: [1, 1, 10] },
@@ -47,7 +68,7 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement(
       React.Fragment,
       null,
-      walls.map((wall, index) => 
+      walls.map((wall, index) =>
         React.createElement('mesh', {
           key: index,
           position: wall.position,
@@ -69,26 +90,6 @@ window.initGame = (React, assetsUrl) => {
 
     return null;
   }
-
-  const keys = {};
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      keys[event.key] = true;
-    };
-
-    const handleKeyUp = (event) => {
-      keys[event.key] = false;
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
 
   function MazeGame() {
     return React.createElement(
