@@ -12,68 +12,49 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ walls }) {
-  const playerRef = useRef();
-  const speed = 0.1;
-  const keys = useRef({});
+  function Player() {
+    const playerRef = useRef();
+    const speed = 0.1;
+    const keys = useRef({});
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      keys.current[event.key] = true;
-    };
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        keys.current[event.key] = true;
+      };
 
-    const handleKeyUp = (event) => {
-      keys.current[event.key] = false;
-    };
+      const handleKeyUp = (event) => {
+        keys.current[event.key] = false;
+      };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
 
-  useFrame(() => {
-    if (playerRef.current) {
-      const direction = new THREE.Vector3();
-      if (keys.current['ArrowUp']) direction.z -= speed;
-      if (keys.current['ArrowDown']) direction.z += speed;
-      if (keys.current['ArrowLeft']) direction.x -= speed;
-      if (keys.current['ArrowRight']) direction.x += speed;
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+        if (keys.current['ArrowUp']) direction.z -= speed;
+        if (keys.current['ArrowDown']) direction.z += speed;
+        if (keys.current['ArrowLeft']) direction.x -= speed;
+        if (keys.current['ArrowRight']) direction.x += speed;
 
-      // Calculate new position
-      const newPosition = playerRef.current.position.clone().add(direction);
-      const playerBox = new THREE.Box3().setFromObject(playerRef.current);
-
-      // Check collision with walls
-      let collision = false;
-      walls.forEach(wall => {
-        const wallBox = new THREE.Box3().setFromCenterAndSize(
-          new THREE.Vector3(...wall.position),
-          new THREE.Vector3(...wall.scale)
-        );
-
-        if (playerBox.intersectsBox(wallBox)) {
-          collision = true; // Collision detected
-        }
-      });
-
-      // Update position only if no collision
-      if (!collision) {
-        playerRef.current.position.copy(newPosition);
+        // Update position
+        playerRef.current.position.add(direction);
       }
-    }
-  });
+    });
 
-  return React.createElement('mesh', {
-    ref: playerRef,
-    position: [8.5, 0.5, -8.5], // Centered position
-    geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-    material: new THREE.MeshStandardMaterial({ color: 'blue' })
-  });
-}
+    return React.createElement('mesh', {
+      ref: playerRef,
+      position: [8.5, 0.5, -8.5], // Centered position
+      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
+      material: new THREE.MeshStandardMaterial({ color: 'blue' })
+    });
+  }
 
   function Camera() {
     const { camera } = useThree();
@@ -86,7 +67,7 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
-  function Maze({ walls }) {
+  function Maze() {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -111,49 +92,47 @@ window.initGame = (React, assetsUrl) => {
       [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
 
-   const wallPositions = [];
+    const wallPositions = [];
 
-  mazeLayout.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
-      if (cell === 1) { // Wall
-        const wallPosition = [
-          colIndex - mazeLayout[0].length / 2 + 0.5,
-          wallHeight / 2,
-          rowIndex - mazeLayout.length / 2 + 0.5,
-        ];
-        const wallScale = [1, wallHeight, 1];
-        wallPositions.push({ position: wallPosition, scale: wallScale });
-        walls.push({ position: wallPosition, scale: wallScale }); // Store wall for Player collision
-      }
+    mazeLayout.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === 1) { // Wall
+          wallPositions.push({
+            position: [
+              colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
+              wallHeight / 2,
+              rowIndex - mazeLayout.length / 2 + 0.5,
+            ],
+            scale: [1, wallHeight, 1]
+          });
+        }
+      });
     });
-  });
 
-  return React.createElement(
-    React.Fragment,
-    null,
-    wallPositions.map((wall, index) =>
-      React.createElement(MazeWall, {
-        key: index,
-        position: wall.position,
-        scale: wall.scale
-      })
-    )
-  );
-}
+    return React.createElement(
+      React.Fragment,
+      null,
+      wallPositions.map((wall, index) =>
+        React.createElement(MazeWall, {
+          key: index,
+          position: wall.position,
+          scale: wall.scale
+        })
+      )
+    );
+  }
 
   function MazeRunnerGame() {
-  const wallData = []; // Store wall data for collision detection
-
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(Camera),
-    React.createElement('ambientLight', { intensity: 0.5 }),
-    React.createElement('pointLight', { position: [10, 10, 10] }),
-    React.createElement(Maze, { walls: wallData }), // Pass walls data to Maze
-    React.createElement(Player, { walls: wallData }) // Pass walls data to Player
-  );
-}
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Camera),
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze),
+      React.createElement(Player)
+    );
+  }
 
   return MazeRunnerGame;
 };
