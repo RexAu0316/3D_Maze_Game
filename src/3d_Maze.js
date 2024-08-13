@@ -70,23 +70,26 @@ window.initGame = (React, assetsUrl) => {
   function Maze() {
     const wallThickness = 1; // Thickness of the walls
     const squareSize = 10;
-    
-    const wall =[
-      {position: [0, 0, -5], scale: [10, 1, 1] }
+
+    const walls = [
+      { position: [0, 0, -squareSize / 2], scale: [squareSize, 1, wallThickness] }, // Back wall
+      { position: [0, 0, squareSize / 2], scale: [squareSize, 1, wallThickness] },  // Front wall
+      { position: [-squareSize / 2, 0, 0], scale: [wallThickness, 1, squareSize] },  // Left wall
+      { position: [squareSize / 2, 0, 0], scale: [wallThickness, 1, squareSize] }   // Right wall
     ];
     
-   return React.createElement(
-    React.Fragment,
-    null,
-    walls.map((wall, index) =>
-      React.createElement(MazeWall, {
-        key: index,
-        position: wall.position,
-        scale: wall.scale
-      })
-    )
-  );
-}
+    return React.createElement(
+      React.Fragment,
+      null,
+      walls.map((wall, index) =>
+        React.createElement(MazeWall, {
+          key: index,
+          position: wall.position,
+          scale: wall.scale
+        })
+      )
+    );
+  }
 
   function MazeRunnerGame() {
     return React.createElement(
