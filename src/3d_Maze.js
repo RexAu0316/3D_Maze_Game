@@ -71,7 +71,7 @@ window.initGame = (React, assetsUrl) => {
     const walls = [
       { position: [0, 0, -5], scale: [10, 1, 1] },
       { position: [0, 0, 5], scale: [10, 1, 1] },
-      { position: [-5, 0, 0], scale: [1, 10, 1] },
+      { position: [-5, 0, 0], scale: [10, 1, 1] },
       { position: [5, 0, 0], scale: [1, 10, 1] },
       // Add more walls for complexity
     ];
