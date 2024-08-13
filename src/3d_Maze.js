@@ -50,7 +50,7 @@ window.initGame = (React, assetsUrl) => {
 
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [0, 0.5, 0], // Match height with walls
+      position: [0, 0.5, 0], // Centered position
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
@@ -69,19 +69,31 @@ window.initGame = (React, assetsUrl) => {
 
   function Maze() {
     const wallThickness = 1; // Thickness of the walls
-    const squareSize = 20; // Size of the outer square
-    const wallHeight = 1; // Height of the walls (same as player's height)
-
-    const wallPositions = [
-      // Bottom wall
-      { position: [0, wallHeight / 2, -squareSize / 2], scale: [squareSize, wallHeight, wallThickness] },
-      // Top wall
-      { position: [0, wallHeight / 2, squareSize / 2], scale: [squareSize, wallHeight, wallThickness] },
-      // Left wall
-      { position: [-squareSize / 2, wallHeight / 2, 0], scale: [wallThickness, wallHeight, squareSize] },
-      // Right wall
-      { position: [squareSize / 2, wallHeight / 2, 0], scale: [wallThickness, wallHeight, squareSize] }
+    const wallHeight = 1; // Height of the walls
+    const mazeLayout = [
+      [1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 0, 1, 0, 1],
+      [0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 0, 1],
     ];
+
+    const wallPositions = [];
+
+    mazeLayout.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === 1) { // Wall
+          wallPositions.push({
+            position: [
+              colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
+              wallHeight / 2,
+              rowIndex - mazeLayout.length / 2 + 0.5,
+            ],
+            scale: [1, wallHeight, 1]
+          });
+        }
+      });
+    });
 
     return React.createElement(
       React.Fragment,
