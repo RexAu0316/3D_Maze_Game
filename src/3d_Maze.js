@@ -72,14 +72,13 @@ window.initGame = (React, assetsUrl) => {
     const squareSize = 10; // Size of the outer square
     const mazeLayout = [
       [1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 1],
-      [1, 1, 0, 0, 1],
+      [1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 1],
       [1, 1, 1, 1, 1]
     ];
 
     const walls = [];
-
-    // Generate walls based on the maze layout
     const cellSize = squareSize / mazeLayout.length; // Calculate the size of each cell
 
     mazeLayout.forEach((row, rowIndex) => {
@@ -91,7 +90,7 @@ window.initGame = (React, assetsUrl) => {
               0,
               rowIndex * cellSize - squareSize / 2 + cellSize / 2 // Center the wall
             ],
-            scale: [cellSize, wallThickness, wallThickness]
+            scale: [cellSize, wallThickness, wallThickness] // Wall size for correct height
           });
         }
       });
