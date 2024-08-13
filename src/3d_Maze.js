@@ -1,6 +1,6 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   const MazeWall = ({ position, scale }) => {
@@ -9,14 +9,6 @@ window.initGame = (React, assetsUrl) => {
       scale: scale,
       geometry: new THREE.BoxGeometry(1, 1, 1),
       material: new THREE.MeshStandardMaterial({ color: 'gray' })
-    });
-  };
-
-  const Collectible = ({ position }) => {
-    return React.createElement('mesh', {
-      position: position,
-      geometry: new THREE.SphereGeometry(0.2, 32, 32),
-      material: new THREE.MeshStandardMaterial({ color: 'gold' })
     });
   };
 
@@ -76,13 +68,13 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Maze() {
-  const walls = [
-    { position: [0, 0, -5], scale: [10, 1, 1] },
-    { position: [0, 0, 5], scale: [10, 1, 1] },
-    { position: [-5, 0, 0], scale: [1, 10, 1] },
-    { position: [5, 0, 0], scale: [1, 10, 1] },
-    // Add more walls for complexity
-  ];
+    const walls = [
+      { position: [0, 0, -5], scale: [10, 1, 1] },
+      { position: [0, 0, 5], scale: [10, 1, 1] },
+      { position: [-5, 0, 0], scale: [1, 10, 1] },
+      { position: [5, 0, 0], scale: [1, 10, 1] },
+      // Add more walls for complexity
+    ];
 
     return React.createElement(
       React.Fragment,
@@ -98,23 +90,6 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function MazeRunnerGame() {
-    const [collectibles, setCollectibles] = useState([]);
-
-    useEffect(() => {
-      // Generate random collectibles
-      const newCollectibles = [];
-      for (let i = 0; i < 5; i++) {
-        newCollectibles.push({
-          position: [
-            (Math.random() - 0.5) * 8,
-            0.2,
-            (Math.random() - 0.5) * 8
-          ]
-        });
-      }
-      setCollectibles(newCollectibles);
-    }, []);
-
     return React.createElement(
       React.Fragment,
       null,
@@ -122,13 +97,7 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze),
-      React.createElement(Player),
-      collectibles.map((collectible, index) =>
-        React.createElement(Collectible, {
-          key: index,
-          position: collectible.position
-        })
-      )
+      React.createElement(Player)
     );
   }
 
