@@ -60,7 +60,7 @@ window.initGame = (React, assetsUrl) => {
     const { camera } = useThree();
 
     useEffect(() => {
-      camera.position.set(0, 15, 20); // Adjusted for larger maze size
+      camera.position.set(0, 15, 15); // Adjusted for maze size
       camera.lookAt(0, 0, 0);
     }, [camera]);
 
@@ -68,20 +68,18 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Maze() {
-    const wallThickness = 1; // Thickness of the walls
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
-      [1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1],
-      [1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     ];
 
     const wallPositions = [];
