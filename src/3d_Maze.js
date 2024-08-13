@@ -68,26 +68,41 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Maze() {
-    const walls = [
-      { position: [0, 0, -5], scale: [10, 1, 1] },
-      { position: [0, 0, 5], scale: [10, 1, 1] },
-      { position: [-5, 0, 0], scale: [10, 1, 1] },
-      { position: [5, 0, 0], scale: [10, 1, 1] },
-      // Add more walls for complexity
-    ];
+  const walls = [
+    // Outer walls
+    { position: [0, 0, -5], scale: [10, 1, 1] }, // Back wall
+    { position: [0, 0, 5], scale: [10, 1, 1] }, // Front wall
+    { position: [-5, 0, 0], scale: [1, 10, 1] }, // Left wall
+    { position: [5, 0, 0], scale: [1, 10, 1] }, // Right wall
 
-    return React.createElement(
-      React.Fragment,
-      null,
-      walls.map((wall, index) =>
-        React.createElement(MazeWall, {
-          key: index,
-          position: wall.position,
-          scale: wall.scale
-        })
-      )
-    );
-  }
+    // Inner walls creating the maze structure
+    { position: [-4, 0, -2], scale: [1, 1, 4] }, // Vertical wall
+    { position: [-2, 0, -2], scale: [1, 1, 4] }, // Vertical wall
+    { position: [-4, 0, 1], scale: [1, 1, 2] },  // Vertical wall
+    { position: [-3, 0, 3], scale: [1, 1, 2] },  // Vertical wall
+    { position: [-1, 0, 3], scale: [1, 1, 2] },  // Vertical wall
+    { position: [1, 0, 3], scale: [1, 1, 2] },   // Vertical wall
+    { position: [3, 0, 0], scale: [1, 1, 2] },   // Vertical wall
+    { position: [-1, 0, 0], scale: [1, 1, 2] },  // Vertical wall
+    { position: [0, 0, -1], scale: [1, 1, 2] },  // Vertical wall
+    { position: [2, 0, -1], scale: [1, 1, 4] },   // Vertical wall
+    { position: [4, 0, 2], scale: [1, 1, 2] },    // Vertical wall
+    { position: [0, 0, 2], scale: [1, 1, 2] },    // Vertical wall
+    { position: [-2, 0, 0], scale: [1, 1, 2] },   // Vertical wall
+  ];
+
+  return React.createElement(
+    React.Fragment,
+    null,
+    walls.map((wall, index) =>
+      React.createElement(MazeWall, {
+        key: index,
+        position: wall.position,
+        scale: wall.scale
+      })
+    )
+  );
+}
 
   function MazeRunnerGame() {
     return React.createElement(
