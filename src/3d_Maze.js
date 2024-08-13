@@ -76,14 +76,23 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Maze() {
-    const walls = [
-      { position: [0, 0, -5], scale: [10, 1, 1] },
-      { position: [5, 0, 0], scale: [1, 1, 10] },
-      { position: [-5, 0, 0], scale: [1, 1, 10] },
-      { position: [0, 0, 5], scale: [10, 1, 1] },
-      { position: [-2.5, 0, -2.5], scale: [1, 1, 5] },
-      { position: [2.5, 0, -2.5], scale: [1, 1, 5] }
-    ];
+  const walls = [
+    { position: [0, 0, -5], scale: [10, 1, 1] },
+    { position: [0, 0, 5], scale: [10, 1, 1] },
+    { position: [-5, 0, 0], scale: [1, 10, 1] },
+    { position: [5, 0, 0], scale: [1, 10, 1] },
+    { position: [-3.5, 0, -3], scale: [1, 1, 6] },
+    { position: [-1.5, 0, -3], scale: [1, 1, 6] },
+    { position: [1.5, 0, -3], scale: [1, 1, 6] },
+    { position: [3.5, 0, -3], scale: [1, 1, 6] },
+    { position: [-4, 0, -1], scale: [1, 1, 2] },
+    { position: [4, 0, -1], scale: [1, 1, 2] },
+    { position: [-2, 0, 3], scale: [1, 1, 2] },
+    { position: [2, 0, 3], scale: [1, 1, 2] },
+    { position: [0, 0, -2], scale: [1, 1, 4] },
+    { position: [0, 0, 1], scale: [1, 1, 4] },
+    // Add more walls for complexity
+  ];
 
     return React.createElement(
       React.Fragment,
