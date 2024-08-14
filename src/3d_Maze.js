@@ -28,6 +28,20 @@ window.initGame = (React, assetsUrl) => {
         window.removeEventListener('keyup', handleKeyUp);
       };
     }, []);
+
+    const checkCollision = (nextPosition) => {
+      for (let wall of wallPositions) {
+        const wallBox = new THREE.Box3().setFromCenterAndSize(
+          new THREE.Vector3(...wall.position),
+          new THREE.Vector3(...wall.scale)
+        );
+        if (wallBox.containsPoint(new THREE.Vector3(...nextPosition))) {
+          return true; // Collision detected
+        }
+      }
+      return false; // No collision
+    };
+    
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -36,9 +50,13 @@ window.initGame = (React, assetsUrl) => {
         if (keys.current['ArrowLeft']) direction.x -= speed;
         if (keys.current['ArrowRight']) direction.x += speed;
         // Update position
-        playerRef.current.position.add(direction);
-      }
-    });
+        const nextPosition = playerRef.current.position.clone().add(direction);
+    
+    if (!checkCollision(nextPosition.toArray())) {
+      playerRef.current.position.add(direction);
+    }
+  }
+});
 
     return React.createElement('mesh', {
       ref: playerRef,
