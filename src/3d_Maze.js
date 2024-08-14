@@ -22,7 +22,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes, , finishPoint }) {
+  function Player({ wallBoxes, finishPoint }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
