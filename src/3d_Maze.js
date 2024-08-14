@@ -22,7 +22,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes }) {
+  function Player({ wallBoxes, , finishPoint }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
@@ -177,7 +177,7 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes }) // Pass wallBoxes as props
+      React.createElement(Player, { wallBoxes , finishPoint}) // Pass wallBoxes as props
     );
   }
 
