@@ -22,6 +22,21 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+    function ThirdPersonCamera({ playerRef }) {
+    const { camera } = useThree();
+    const offset = new THREE.Vector3(0, 5, -10); // Position behind the player
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Set camera position based on player's position + offset
+        camera.position.copy(playerRef.current.position).add(offset);
+        camera.lookAt(playerRef.current.position); // Make the camera look at the player
+      }
+    });
+
+    return null; // No need to render anything
+  }
+  
   function Player({ wallBoxes }) {
     const playerRef = useRef();
     const speed = 0.1;
@@ -81,15 +96,6 @@ window.initGame = (React, assetsUrl) => {
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
-  }
-
-  function Camera() {
-    const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
   }
 
   function Maze() {
