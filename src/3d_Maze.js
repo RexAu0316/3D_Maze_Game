@@ -14,16 +14,13 @@ window.initGame = (React, assetsUrl) => {
   };
 
     const Coin = ({ position }) => {
-  const geometry = React.useMemo(() => new THREE.CircleGeometry(0.5, 32), []);
-  const material = React.useMemo(() => new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), []);
-
-  return React.createElement('mesh', {
-    position: position,
-    geometry: geometry,
-    material: material,
-    rotation: [0, 0, 0]
-  });
-};
+    return React.createElement('mesh', {
+      position: position,
+      geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
+      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
+      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
+    });
+  };
 
   function Player({ wallBoxes }) {
     const playerRef = useRef();
@@ -77,31 +74,23 @@ window.initGame = (React, assetsUrl) => {
         }
       }
     });
-    
+
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [8.5, 0.5, -8.5],
+      position: [8.5, 0.5, -8.5], // Centered position
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
   }
 
-  function Camera({ playerRef }) {
-  const { camera } = useThree();
-
-  useFrame(() => {
-    if (playerRef.current) {
-      // Set the camera position behind and above the player
-      camera.position.x = playerRef.current.position.x;
-      camera.position.y = playerRef.current.position.y + 2; // Adjust height as needed
-      camera.position.z = playerRef.current.position.z + 5; // Distance behind the player
-
-      camera.lookAt(playerRef.current.position); // Keep the camera looking at the player
-    }
-  });
-
-  return null;
-}
+  function Camera() {
+    const { camera } = useThree();
+    useEffect(() => {
+      camera.position.set(0, 20, 20); // Adjusted for maze size
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
+    return null;
+  }
 
   function Maze() {
     const wallHeight = 1; // Height of the walls
@@ -166,24 +155,22 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes }), // Pass wallBoxes to Player
-      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] })
-    ); // Correctly closed with a bracket
-  } // Closing bracket for Maze function
+      React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
+      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add the coin at the specified position
+    );
+  }
 
 
- function MazeRunnerGame() {
-  const playerRef = useRef(); // Create a ref for the player
-
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(Camera, { playerRef }), // Pass playerRef to Camera
-    React.createElement('ambientLight', { intensity: 0.5 }),
-    React.createElement('pointLight', { position: [10, 10, 10] }),
-    React.createElement(Maze, { playerRef }) // Pass playerRef to Maze
-  );
-}
+  function MazeRunnerGame() {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Camera),
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze)
+    );
+  }
 
   return MazeRunnerGame;
 };
