@@ -110,7 +110,7 @@ function ThirdPersonCamera({ playerRef }) {
 
   return null; // This component does not render anything
 }
-
+  
   function Maze() {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
@@ -179,6 +179,7 @@ function ThirdPersonCamera({ playerRef }) {
     );
   }
 
+// Update the MazeRunnerGame component to include the ThirdPersonCamera
 function MazeRunnerGame() {
   return React.createElement(
     React.Fragment,
