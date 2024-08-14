@@ -1,6 +1,6 @@
 window.initGame = (React, assetsUrl) => {
   const { useEffect, useRef } = React;
-  const { useFrame } = window.ReactThreeFiber;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   const MazeWall = ({ position, scale }) => {
@@ -18,11 +18,12 @@ window.initGame = (React, assetsUrl) => {
       position: position,
       geometry: new THREE.CircleGeometry(0.5, 32),
       material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }),
-      rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
+      rotation: [0, 0, 0]
     });
   };
 
-  function Player({ wallBoxes, playerRef }) {
+  function Player({ wallBoxes }) {
+    const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
 
@@ -51,7 +52,7 @@ window.initGame = (React, assetsUrl) => {
 
       return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
-    
+
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -80,10 +81,48 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
+  function Camera() {
+    const { camera } = useThree();
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Set the camera position behind the player and above
+        camera.position.set(
+          playerRef.current.position.x,
+          playerRef.current.position.y + 5, // Elevate the camera
+          playerRef.current.position.z - 5  // Position the camera behind the player
+        );
+        camera.lookAt(playerRef.current.position); // Always look at the player
+      }
+    });
+
+    return React.createElement(React.Fragment, null, React.createElement('mesh', { ref: playerRef }));
+  }
+
   function Maze() {
     const wallHeight = 1;
     const mazeLayout = [
-      // ... (Maze layout remains unchanged)
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+      [1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
 
     const wallPositions = [];
@@ -110,8 +149,7 @@ window.initGame = (React, assetsUrl) => {
         }
       });
     });
-    
-    const playerRef = useRef();
+
     return React.createElement(
       React.Fragment,
       null,
@@ -122,20 +160,19 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes, playerRef }),
+      React.createElement(Player, { wallBoxes }),
       React.createElement(Coin, { position: [-8.5, 0.5, 10.5] })
     );
   }
 
   function MazeRunnerGame() {
-    const playerRef = useRef();
-
     return React.createElement(
       React.Fragment,
       null,
+      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze, { playerRef })
+      React.createElement(Maze)
     );
   }
 
