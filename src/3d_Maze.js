@@ -33,12 +33,13 @@ function Player() {
   }, []);
   
   useEffect(() => {
-    // Initialize maze walls after maze component is rendered
-    mazeWalls.current = [...document.querySelectorAll('.maze-wall')].map(wall => {
-      const box = new THREE.Box3().setFromObject(wall);
-      return box;
-    });
-  }, []);
+  // Initialize maze walls after maze component is rendered
+  const walls = [...document.querySelectorAll('.maze-wall')];
+  mazeWalls.current = walls.map(wall => {
+    const box = new THREE.Box3().setFromObject(wall);
+    return box;
+  });
+}, []);
 
   const checkCollision = (nextPosition) => {
     const playerBox = new THREE.Box3().setFromCenterAndSize(
