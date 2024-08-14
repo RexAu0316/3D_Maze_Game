@@ -13,10 +13,20 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+  const FinishPoint = ({ position }) => {
+    return React.createElement('mesh', {
+      position: position,
+      geometry: new THREE.SphereGeometry(0.5, 16, 16),
+      material: new THREE.MeshStandardMaterial({ color: 'gold' }),
+      className: 'finish-point' // Adding class for identification
+    });
+  };
+
   function Player({ wallBoxes }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
+    const [gameOver, setGameOver] = useState(false); // State to track game over
 
     useEffect(() => {
       const handleKeyDown = (event) => {
@@ -44,6 +54,20 @@ window.initGame = (React, assetsUrl) => {
       return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
 
+     const checkFinishCollision = () => {
+      const playerBox = new THREE.Box3().setFromCenterAndSize(
+        new THREE.Vector3(...playerRef.current.position.toArray()),
+        new THREE.Vector3(0.5, 1, 0.5)
+      );
+
+      const finishBox = new THREE.Box3().setFromCenterAndSize(
+        new THREE.Vector3(...finishPoint),
+        new THREE.Vector3(1, 1, 1) // Adjust the size as necessary
+      );
+
+      return playerBox.intersectsBox(finishBox);
+    };
+
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -62,6 +86,11 @@ window.initGame = (React, assetsUrl) => {
         // Check for collisions before updating the player's position
         if (!checkCollision(nextPosition)) {
           playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+        }
+        // Check for collision with finish point
+        if (checkFinishCollision()) {
+          setGameOver(true);
+          alert('Congratulations! You have completed the maze!');
         }
       }
     });
@@ -135,6 +164,8 @@ window.initGame = (React, assetsUrl) => {
       });
     });
 
+    const finishPoint = [8.5, 0.5, -10.5];
+    
     // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
