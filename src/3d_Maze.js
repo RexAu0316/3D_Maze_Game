@@ -14,13 +14,16 @@ window.initGame = (React, assetsUrl) => {
   };
 
     const Coin = ({ position }) => {
-    return React.createElement('mesh', {
-      position: position,
-      geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
-      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
-      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
-    });
-  };
+  const geometry = React.useMemo(() => new THREE.CircleGeometry(0.5, 32), []);
+  const material = React.useMemo(() => new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), []);
+
+  return React.createElement('mesh', {
+    position: position,
+    geometry: geometry,
+    material: material,
+    rotation: [0, 0, 0]
+  });
+};
 
   function Player({ wallBoxes }) {
     const playerRef = useRef();
