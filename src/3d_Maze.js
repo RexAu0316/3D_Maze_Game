@@ -8,45 +8,76 @@ window.initGame = (React, assetsUrl) => {
       scale: scale,
       geometry: new THREE.BoxGeometry(1, 1, 1),
       material: new THREE.MeshStandardMaterial({ color: 'gray' })
+      className: 'maze-wall' // Adding class for identification
     });
   };
-  function Player() {
-    const playerRef = useRef();
-    const speed = 0.1;
-    const keys = useRef({});
-    useEffect(() => {
-      const handleKeyDown = (event) => {
-        keys.current[event.key] = true;
-      };
-      const handleKeyUp = (event) => {
-        keys.current[event.key] = false;
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
-    }, []);
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
-        // Update position
-        playerRef.current.position.add(direction);
-      }
-    });
+function Player() {
+  const playerRef = useRef();
+  const speed = 0.1;
+  const keys = useRef({});
+  const mazeWalls = useRef([]);
 
-    return React.createElement('mesh', {
-      ref: playerRef,
-      position: [8.5, 0.5, -8.5], // Centered position
-      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-      material: new THREE.MeshStandardMaterial({ color: 'blue' })
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      keys.current[event.key] = true;
+    };
+    const handleKeyUp = (event) => {
+      keys.current[event.key] = false;
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+  
+  useEffect(() => {
+    // Initialize maze walls after maze component is rendered
+    mazeWalls.current = [...document.querySelectorAll('.maze-wall')].map(wall => {
+      const box = new THREE.Box3().setFromObject(wall);
+      return box;
     });
-  }
+  }, []);
+
+  const checkCollision = (nextPosition) => {
+    const playerBox = new THREE.Box3().setFromCenterAndSize(
+      new THREE.Vector3(...nextPosition),
+      new THREE.Vector3(0.5, 1, 0.5)
+    );
+
+    return mazeWalls.current.some(wallBox => playerBox.intersectsBox(wallBox));
+  };
+
+  useFrame(() => {
+    if (playerRef.current) {
+      const direction = new THREE.Vector3();
+      if (keys.current['ArrowUp']) direction.z -= speed;
+      if (keys.current['ArrowDown']) direction.z += speed;
+      if (keys.current['ArrowLeft']) direction.x -= speed;
+      if (keys.current['ArrowRight']) direction.x += speed;
+
+      // Calculate the new position based on direction
+      const nextPosition = [
+        playerRef.current.position.x + direction.x,
+        playerRef.current.position.y,
+        playerRef.current.position.z + direction.z,
+      ];
+
+      // Check for collisions before updating the player's position
+      if (!checkCollision(nextPosition)) {
+        playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+      }
+    }
+  });
+
+  return React.createElement('mesh', {
+    ref: playerRef,
+    position: [8.5, 0.5, -8.5], // Centered position
+    geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
+    material: new THREE.MeshStandardMaterial({ color: 'blue' })
+  });
+}
   function Camera() {
     const { camera } = useThree();
     useEffect(() => {
