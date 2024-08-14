@@ -13,6 +13,15 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+    const Coin = ({ position }) => {
+    return React.createElement('mesh', {
+      position: position,
+      geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
+      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
+      rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
+    });
+  };
+
   function Player({ wallBoxes }) {
     const playerRef = useRef();
     const speed = 0.1;
@@ -43,16 +52,7 @@ window.initGame = (React, assetsUrl) => {
 
       return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
-
-    const Coin = ({ position }) => {
-      return React.createElement('mesh', {
-        position: position,
-        geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
-        material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
-        rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
-      });
-    };
-
+    
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -145,20 +145,20 @@ window.initGame = (React, assetsUrl) => {
     });
 
     // Pass the wallBoxes to the Player component
-      return React.createElement(
-    React.Fragment,
-    null,
-    wallPositions.map((wall, index) =>
-      React.createElement(MazeWall, {
-        key: index,
-        position: wall.position,
-        scale: wall.scale
-      })
-    ),
-    React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
-    React.createElement(Coin, { position: [8.5, 0.5, -8.5] }) // Add the coin at the specified position
-  );
-}
+    return React.createElement(
+      React.Fragment,
+      null,
+      wallPositions.map((wall, index) =>
+        React.createElement(MazeWall, {
+          key: index,
+          position: wall.position,
+          scale: wall.scale
+        })
+      ),
+      React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
+      React.createElement(Coin, { position: [8.5, 0.5, -8.5] }) // Add the coin at the specified position
+    );
+  }
 
 
   function MazeRunnerGame() {
