@@ -7,7 +7,7 @@ window.initGame = (React, assetsUrl) => {
       position: position,
       scale: scale,
       geometry: new THREE.BoxGeometry(1, 1, 1),
-      material: new THREE.MeshStandardMaterial({ color: 'gray' })
+      material: new THREE.MeshStandardMaterial({ color: 'gray' }),
       className: 'maze-wall' // Adding class for identification
     });
   };
