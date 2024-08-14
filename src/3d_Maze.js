@@ -103,6 +103,19 @@ function Camera({ playerPosition }) {
   return null;
 }
 
+  function MazeRunnerGame() {
+    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]);
+    
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(Camera, { playerPosition }), // Pass player's position to Camera
+    React.createElement('ambientLight', { intensity: 0.5 }),
+    React.createElement('pointLight', { position: [10, 10, 10] }),
+    React.createElement(Maze, { setPlayerPosition })
+  );
+}
+
   function Maze() {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
@@ -154,11 +167,7 @@ function Camera({ playerPosition }) {
         }
       });
     });
-
-    // Update to store player's position
-    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]);
     
-    // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
       null,
@@ -174,18 +183,5 @@ function Camera({ playerPosition }) {
     );
   }
 
-  function MazeRunnerGame() {
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(Camera, { playerPosition }), // Pass player's position to Camera
-    React.createElement('ambientLight', { intensity: 0.5 }),
-    React.createElement('pointLight', { position: [10, 10, 10] }),
-    React.createElement(Maze)
-  );
-}
-
-  return MazeRunnerGame;
-};
-
+  
 console.log('3D Maze Runner game script loaded');
