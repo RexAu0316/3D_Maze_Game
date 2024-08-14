@@ -21,85 +21,85 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes, playerRef }) {
+function Player({ wallBoxes, onPositionChange }) {
+    const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
 
     useEffect(() => {
-      const handleKeyDown = (event) => {
-        keys.current[event.key] = true;
-      };
+        const handleKeyDown = (event) => {
+            keys.current[event.key] = true;
+        };
 
-      const handleKeyUp = (event) => {
-        keys.current[event.key] = false;
-      };
+        const handleKeyUp = (event) => {
+            keys.current[event.key] = false;
+        };
 
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
     }, []);
 
     const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        new THREE.Vector3(...nextPosition),
-        new THREE.Vector3(0.5, 1, 0.5)
-      );
+        const playerBox = new THREE.Box3().setFromCenterAndSize(
+            new THREE.Vector3(...nextPosition),
+            new THREE.Vector3(0.5, 1, 0.5)
+        );
 
-      return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
+        return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
 
     useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
+        if (playerRef.current) {
+            const direction = new THREE.Vector3();
+            if (keys.current['ArrowUp']) direction.z -= speed;
+            if (keys.current['ArrowDown']) direction.z += speed;
+            if (keys.current['ArrowLeft']) direction.x -= speed;
+            if (keys.current['ArrowRight']) direction.x += speed;
 
-        const nextPosition = [
-          playerRef.current.position.x + direction.x,
-          playerRef.current.position.y,
-          playerRef.current.position.z + direction.z,
-        ];
+            const nextPosition = [
+                playerRef.current.position.x + direction.x,
+                playerRef.current.position.y,
+                playerRef.current.position.z + direction.z,
+            ];
 
-        if (!checkCollision(nextPosition)) {
-          playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+            if (!checkCollision(nextPosition)) {
+                playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+                onPositionChange(nextPosition); // Update the player position for the camera
+            }
         }
-      }
     });
 
     return React.createElement('mesh', {
-      ref: playerRef,
-      position: [8.5, 0.5, -8.5],
-      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-      material: new THREE.MeshStandardMaterial({ color: 'blue' }),
+        ref: playerRef,
+        position: [8.5, 0.5, -8.5],
+        geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
+        material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
-  }
+}
 
-  function Camera({ playerRef }) {
+  function Camera({ playerPosition }) {
     const { camera } = useThree();
-
+    
     useEffect(() => {
-      const updateCamera = () => {
-        if (playerRef.current) {
-          camera.position.set(
-            playerRef.current.position.x,
-            playerRef.current.position.y + 5,
-            playerRef.current.position.z + 5
-          );
-          camera.lookAt(playerRef.current.position);
-        }
-      };
+        const updateCameraPosition = () => {
+            camera.position.set(playerPosition[0], playerPosition[1] + 10, playerPosition[2] + 10); // Adjust height and distance
+            camera.lookAt(playerPosition[0], playerPosition[1], playerPosition[2]); // Look at the player
+        };
+        
+        // Initial position
+        updateCameraPosition();
 
-      const unsubscribe = useFrame(updateCamera);
-      return () => unsubscribe();
-    }, [camera, playerRef]);
+        return () => {
+            // Optional: Clean-up if needed
+        };
+    }, [camera, playerPosition]);
 
     return null;
-  }
+}
 
   function Maze({ playerRef }) {
     const wallHeight = 1; // Height of the walls
@@ -151,21 +151,24 @@ window.initGame = (React, assetsUrl) => {
         }
       });
     });
+    
+    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]); // Initial player position
 
     return React.createElement(
-      React.Fragment,
-      null,
-      wallPositions.map((wall, index) =>
-        React.createElement(MazeWall, {
-          key: index,
-          position: wall.position,
-          scale: wall.scale,
-        })
-      ),
-      React.createElement(Player, { wallBoxes, playerRef }), // Pass playerRef to Player
-      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] })
+        React.Fragment,
+        null,
+        wallPositions.map((wall, index) =>
+            React.createElement(MazeWall, {
+                key: index,
+                position: wall.position,
+                scale: wall.scale
+            })
+        ),
+        React.createElement(Player, { wallBoxes, onPositionChange: setPlayerPosition }), // Pass function to update position
+        React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }),
+        React.createElement(Camera, { playerPosition }) // Pass playerPosition to Camera
     );
-  }
+}
 
   function MazeRunnerGame() {
     const playerRef = useRef();
