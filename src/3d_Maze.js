@@ -22,7 +22,8 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes, playerRef }) {
+function Player({ wallBoxes, onPositionChange }) {
+  const playerRef = useRef();
   const speed = 0.1;
   const keys = useRef({});
 
@@ -51,7 +52,7 @@ window.initGame = (React, assetsUrl) => {
 
     return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
   };
-
+  
   useFrame(() => {
     if (playerRef.current) {
       const direction = new THREE.Vector3();
@@ -60,39 +61,44 @@ window.initGame = (React, assetsUrl) => {
       if (keys.current['ArrowLeft']) direction.x -= speed;
       if (keys.current['ArrowRight']) direction.x += speed;
 
-      // Calculate the new position based on direction
       const nextPosition = [
         playerRef.current.position.x + direction.x,
         playerRef.current.position.y,
         playerRef.current.position.z + direction.z,
       ];
 
-      // Check for collisions before updating the player's position
       if (!checkCollision(nextPosition)) {
         playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+        onPositionChange(nextPosition); // Notify the camera of the new position
       }
     }
   });
 
   return React.createElement('mesh', {
     ref: playerRef,
-    position: [8.5, 0.5, -8.5], // Initial position of the player
+    position: [8.5, 0.5, -8.5],
     geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
     material: new THREE.MeshStandardMaterial({ color: 'blue' })
   });
 }
 
-  function Camera({ playerRef }) {
+function Camera({ playerPosition }) {
   const { camera } = useThree();
-  const offset = new THREE.Vector3(0, 5, -10); // Adjust the offset for your desired camera position
-
-  useFrame(() => {
-    if (playerRef.current) {
-      // Update camera position based on the player's position
-      camera.position.copy(playerRef.current.position).add(offset);
-      camera.lookAt(playerRef.current.position); // Make the camera look at the player
-    }
-  });
+  
+  useEffect(() => {
+    const updateCamera = () => {
+      if (playerPosition) {
+        const [x, y, z] = playerPosition;
+        camera.position.set(x, y + 5, z + 5); // Adjust the height and distance
+        camera.lookAt(x, y, z); // Look at the player
+      }
+    };
+    
+    updateCamera(); // Initial update
+    const unsubscribe = useFrame(() => updateCamera()); // Update on each frame
+    
+    return () => unsubscribe(); // Clean up the frame subscription
+  }, [camera, playerPosition]);
 
   return null;
 }
@@ -149,6 +155,9 @@ window.initGame = (React, assetsUrl) => {
       });
     });
 
+    // Update to store player's position
+    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]);
+    
     // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
@@ -166,15 +175,13 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function MazeRunnerGame() {
-  const playerRef = useRef(); // Create a ref for the player
-
   return React.createElement(
     React.Fragment,
     null,
-    React.createElement(Camera, { playerRef }), // Pass the playerRef to the Camera
+    React.createElement(Camera, { playerPosition }), // Pass player's position to Camera
     React.createElement('ambientLight', { intensity: 0.5 }),
     React.createElement('pointLight', { position: [10, 10, 10] }),
-    React.createElement(Maze, { playerRef }) // Pass the playerRef to the Maze
+    React.createElement(Maze)
   );
 }
 
