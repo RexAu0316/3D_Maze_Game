@@ -22,7 +22,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes }) {
+  function Player({ wallBoxes, playerRef }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
@@ -83,14 +83,20 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-  function Camera() {
-    const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
-  }
+  function Camera({ playerRef }) {
+  const { camera } = useThree();
+  const offset = new THREE.Vector3(0, 5, 10); // Offset to position the camera behind and above the player
+
+  useFrame(() => {
+    if (playerRef.current) {
+      // Set the camera position based on the player's position plus the offset
+      camera.position.copy(playerRef.current.position).add(offset);
+      camera.lookAt(playerRef.current.position); // Make the camera look at the player
+    }
+  });
+
+  return null;
+}
 
   function Maze() {
     const wallHeight = 1; // Height of the walls
@@ -144,33 +150,34 @@ window.initGame = (React, assetsUrl) => {
       });
     });
 
-    // Pass the wallBoxes to the Player component
-    return React.createElement(
-      React.Fragment,
-      null,
-      wallPositions.map((wall, index) =>
-        React.createElement(MazeWall, {
-          key: index,
-          position: wall.position,
-          scale: wall.scale
-        })
-      ),
-      React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
-      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add the coin at the specified position
-    );
-  }
+    const playerRef = useRef(); // Create a ref for the player
+
+  return React.createElement(
+    React.Fragment,
+    null,
+    wallPositions.map((wall, index) =>
+      React.createElement(MazeWall, {
+        key: index,
+        position: wall.position,
+        scale: wall.scale
+      })
+    ),
+    React.createElement(Player, { wallBoxes, playerRef }), // Pass playerRef to Player
+    React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add the coin at the specified position
+  );
+}
 
 
   function MazeRunnerGame() {
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(Camera),
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze)
-    );
-  }
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(Camera, { playerRef: playerRef }), // Pass playerRef to Camera
+    React.createElement('ambientLight', { intensity: 0.5 }),
+    React.createElement('pointLight', { position: [10, 10, 10] }),
+    React.createElement(Maze)
+  );
+}
 
   return MazeRunnerGame;
 };
