@@ -22,7 +22,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes }) {
+  function Player({ wallBoxes, onPositionChange }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
@@ -83,12 +83,16 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-  function Camera() {
+  function Camera({ playerPosition }) {
     const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
+
+    useFrame(() => {
+      if (playerPosition) {
+        camera.position.set(playerPosition[0], 20, playerPosition[2] + 10); // Follow the player above
+        camera.lookAt(playerPosition[0], playerPosition[1], playerPosition[2]); // Look at the player
+      }
+    });
+
     return null;
   }
 
