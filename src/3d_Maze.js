@@ -102,26 +102,22 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-  function Camera({ playerRef }) {
-    const { camera } = useThree();
-    useEffect(() => {
-      const updateCameraPosition = () => {
-        if (playerRef.current) {
-          camera.position.set(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 5);
-          camera.lookAt(playerRef.current.position);
-        }
-      };
+function Camera({ playerRef }) {
+  const { camera } = useThree();
 
-      const frame = () => {
-        updateCameraPosition();
-        requestAnimationFrame(frame);
-      };
-      frame();
+  useFrame(() => {
+    if (playerRef.current) {
+      camera.position.set(
+        playerRef.current.position.x,
+        playerRef.current.position.y + 5,
+        playerRef.current.position.z + 5
+      );
+      camera.lookAt(playerRef.current.position);
+    }
+  });
 
-      return () => cancelAnimationFrame(frame);
-    }, [camera, playerRef]);
-    return null;
-  }
+  return null;
+}
 
   function Maze() {
     const wallHeight = 1;
@@ -189,13 +185,15 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function MazeRunnerGame() {
+    const playerRef = useRef();
+    
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(Camera, { playerRef: useRef() }), // Pass playerRef to Camera
+      React.createElement(Camera, { playerRef }), // Pass playerRef to Camera
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze)
+      React.createElement(Maze, { playerRef })
     );
   }
 
