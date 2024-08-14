@@ -104,15 +104,13 @@ window.initGame = (React, assetsUrl) => {
 
 function Camera({ playerRef }) {
   const { camera } = useThree();
+  const offset = new THREE.Vector3(0, 5, -5); // Adjust this for height and distance
 
   useFrame(() => {
     if (playerRef.current) {
-      camera.position.set(
-        playerRef.current.position.x,
-        playerRef.current.position.y + 5,
-        playerRef.current.position.z + 5
-      );
-      camera.lookAt(playerRef.current.position);
+      // Set camera position based on player's position and offset
+      camera.position.copy(playerRef.current.position).add(offset);
+      camera.lookAt(playerRef.current.position); // Look at the player
     }
   });
 
