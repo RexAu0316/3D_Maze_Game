@@ -1,26 +1,59 @@
 // App.js
-import React, { useRef, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const Player = () => {
-  const playerRef = useRef();
+const App = () => {
+  const sceneRef = useRef();
 
   useEffect(() => {
+    // Create a scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    sceneRef.current.appendChild(renderer.domElement);
+
+    // Create a player
+    const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500 });
+    const player = new THREE.Mesh(playerGeometry, playerMaterial);
+    scene.add(player);
+
+    // Maze walls
+    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const walls = [
+      new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 10), wallMaterial),
+      new THREE.Mesh(new THREE.BoxGeometry(10, 5, 0.5), wallMaterial),
+      new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 10), wallMaterial),
+      new THREE.Mesh(new THREE.BoxGeometry(10, 5, 0.5), wallMaterial),
+    ];
+    
+    walls[0].position.set(-5, 2.5, 0); // Left wall
+    walls[1].position.set(0, 2.5, -5); // Back wall
+    walls[2].position.set(5, 2.5, 0); // Right wall
+    walls[3].position.set(0, 2.5, 5); // Front wall
+
+    walls.forEach(wall => scene.add(wall));
+
+    // Set camera position
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
+
+    // Handle key events for player movement
     const handleKeyDown = (event) => {
       switch (event.key) {
         case 'ArrowUp':
-          playerRef.current.position.z -= 0.1; // Move forward
+          player.position.z -= 0.1;
           break;
         case 'ArrowDown':
-          playerRef.current.position.z += 0.1; // Move backward
+          player.position.z += 0.1;
           break;
         case 'ArrowLeft':
-          playerRef.current.position.x -= 0.1; // Move left
+          player.position.x -= 0.1;
           break;
         case 'ArrowRight':
-          playerRef.current.position.x += 0.1; // Move right
+          player.position.x += 0.1;
           break;
         default:
           break;
@@ -29,29 +62,22 @@ const Player = () => {
 
     window.addEventListener('keydown', handleKeyDown);
 
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Cleanup on unmount
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      sceneRef.current.removeChild(renderer.domElement);
+      renderer.dispose();
     };
   }, []);
 
-  return (
-    <mesh ref={playerRef} position={[0, 0, 0]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="orange" />
-    </mesh>
-  );
-};
-
-const App = () => {
-  return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75} />
-      <OrbitControls />
-      <Player />
-    </Canvas>
-  );
+  return <div ref={sceneRef} />;
 };
 
 export default App;
