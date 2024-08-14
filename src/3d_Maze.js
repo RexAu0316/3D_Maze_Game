@@ -163,9 +163,10 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes, playerRef }), // Pass playerRef to Player
+      React.createElement(Player, { wallBoxes }), // Pass wallBoxes to Player
       React.createElement(Coin, { position: [-8.5, 0.5, 10.5] })
-    );
+    ); // Correctly closed with a bracket
+  } // Closing bracket for Maze function
 
 
  function MazeRunnerGame() {
