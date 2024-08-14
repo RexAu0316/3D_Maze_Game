@@ -156,7 +156,7 @@ window.initGame = (React, assetsUrl) => {
         })
       ),
       React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
-      React.createElement(Coin, { position: [-4.5, 0.5, -4.5] }) // Add the coin at the specified position
+      React.createElement(Coin, { position: [-8.5, 0.5, -8.5] }) // Add the coin at the specified position
     );
   }
 
