@@ -22,60 +22,59 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes, playerRef  }) {
-    const playerRef = useRef();
-    const speed = 0.1;
-    const keys = useRef({});
+  function Player({ wallBoxes, playerRef }) {
+  const speed = 0.1;
+  const keys = useRef({});
 
-    useEffect(() => {
-      const handleKeyDown = (event) => {
-        keys.current[event.key] = true;
-      };
-
-      const handleKeyUp = (event) => {
-        keys.current[event.key] = false;
-      };
-
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
-    }, []);
-
-    const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        new THREE.Vector3(...nextPosition),
-        new THREE.Vector3(0.5, 1, 0.5)
-      );
-
-      return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      keys.current[event.key] = true;
     };
-    
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
 
-        // Calculate the new position based on direction
-        const nextPosition = [
-          playerRef.current.position.x + direction.x,
-          playerRef.current.position.y,
-          playerRef.current.position.z + direction.z,
-        ];
+    const handleKeyUp = (event) => {
+      keys.current[event.key] = false;
+    };
 
-        // Check for collisions before updating the player's position
-        if (!checkCollision(nextPosition)) {
-          playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-        }
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const checkCollision = (nextPosition) => {
+    const playerBox = new THREE.Box3().setFromCenterAndSize(
+      new THREE.Vector3(...nextPosition),
+      new THREE.Vector3(0.5, 1, 0.5)
+    );
+
+    return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
+  };
+  
+  useFrame(() => {
+    if (playerRef.current) {
+      const direction = new THREE.Vector3();
+      if (keys.current['ArrowUp']) direction.z -= speed;
+      if (keys.current['ArrowDown']) direction.z += speed;
+      if (keys.current['ArrowLeft']) direction.x -= speed;
+      if (keys.current['ArrowRight']) direction.x += speed;
+
+      // Calculate the new position based on direction
+      const nextPosition = [
+        playerRef.current.position.x + direction.x,
+        playerRef.current.position.y,
+        playerRef.current.position.z + direction.z,
+      ];
+
+      // Check for collisions before updating the player's position
+      if (!checkCollision(nextPosition)) {
+        playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
       }
-    });
+    }
+  });
 
-   return React.createElement('mesh', {
+  return React.createElement('mesh', {
     ref: playerRef, // Use the passed playerRef
     position: [8.5, 0.5, -8.5],
     geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
