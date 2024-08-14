@@ -9,24 +9,23 @@ window.initGame = (React, assetsUrl) => {
       scale: scale,
       geometry: new THREE.BoxGeometry(1, 1, 1),
       material: new THREE.MeshStandardMaterial({ color: 'gray' }),
-      className: 'maze-wall'
+      className: 'maze-wall' // Adding class for identification
     });
   };
 
-  const Coin = ({ position }) => {
+    const Coin = ({ position }) => {
     return React.createElement('mesh', {
       position: position,
-      geometry: new THREE.CircleGeometry(0.5, 32),
-      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }),
-      rotation: [0, 0, 0]
+      geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
+      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
+      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
     });
   };
 
-  function Player({ wallBoxes, onCoinCollect }) {
+  function Player({ wallBoxes }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
-    const collectedCoins = useRef(0);
 
     useEffect(() => {
       const handleKeyDown = (event) => {
@@ -53,7 +52,7 @@ window.initGame = (React, assetsUrl) => {
 
       return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
-
+    
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -62,34 +61,16 @@ window.initGame = (React, assetsUrl) => {
         if (keys.current['ArrowLeft']) direction.x -= speed;
         if (keys.current['ArrowRight']) direction.x += speed;
 
+        // Calculate the new position based on direction
         const nextPosition = [
           playerRef.current.position.x + direction.x,
           playerRef.current.position.y,
           playerRef.current.position.z + direction.z,
         ];
 
+        // Check for collisions before updating the player's position
         if (!checkCollision(nextPosition)) {
           playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-        }
-
-        // Check for coin collection
-        const coinPosition = [-8.5, 0.5, 10.5]; // Example coin position
-        const playerBox = new THREE.Box3().setFromCenterAndSize(
-          new THREE.Vector3(...nextPosition),
-          new THREE.Vector3(0.5, 1, 0.5)
-        );
-
-        const coinBox = new THREE.Box3().setFromCenterAndSize(
-          new THREE.Vector3(...coinPosition),
-          new THREE.Vector3(0.5, 0.1, 0.5)
-        );
-
-        if (playerBox.intersectsBox(coinBox)) {
-          collectedCoins.current++;
-          onCoinCollect(collectedCoins.current);
-          // Move the coin away after collection
-          coinPosition[0] = Math.random() * 20 - 10;
-          coinPosition[2] = Math.random() * 20 - 10;
         }
       }
     });
@@ -102,24 +83,19 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-function Camera({ playerRef }) {
-  const { camera } = useThree();
-  const offset = new THREE.Vector3(0, 5, -5); // Adjust this for height and distance
-
-  useFrame(() => {
-    if (playerRef.current) {
-      // Set camera position based on player's position and offset
-      camera.position.copy(playerRef.current.position).add(offset);
-      camera.lookAt(playerRef.current.position); // Look at the player
-    }
-  });
-
-  return null;
-}
+  function Camera() {
+    const { camera } = useThree();
+    useEffect(() => {
+      camera.position.set(0, 20, 20); // Adjusted for maze size
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
+    return null;
+  }
 
   function Maze() {
-    const wallHeight = 1;
+    const wallHeight = 1; // Height of the walls
     const mazeLayout = [
+      // ... (your original maze layout)
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
       [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
@@ -140,17 +116,16 @@ function Camera({ playerRef }) {
       [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1],
       [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-
     ];
 
     const wallPositions = [];
-    const wallBoxes = [];
+    const wallBoxes = []; // Array to hold the bounding boxes
 
     mazeLayout.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
-        if (cell === 1) {
+        if (cell === 1) { // Wall
           const position = [
-            colIndex - mazeLayout[0].length / 2 + 0.5,
+            colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
             wallHeight / 2,
             rowIndex - mazeLayout.length / 2 + 0.5,
           ];
@@ -159,6 +134,7 @@ function Camera({ playerRef }) {
             scale: [1, wallHeight, 1]
           });
 
+          // Create bounding box for collision detection
           const wallBox = new THREE.Box3().setFromCenterAndSize(
             new THREE.Vector3(...position),
             new THREE.Vector3(1, wallHeight, 1)
@@ -168,6 +144,7 @@ function Camera({ playerRef }) {
       });
     });
 
+    // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
       null,
@@ -178,20 +155,20 @@ function Camera({ playerRef }) {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes, onCoinCollect: (count) => console.log(`Coins collected: ${count}`) }) // Log coins collected
+      React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
+      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add the coin at the specified position
     );
   }
 
+
   function MazeRunnerGame() {
-    const playerRef = useRef();
-    
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(Camera, { playerRef }), // Pass playerRef to Camera
+      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze, { playerRef })
+      React.createElement(Maze)
     );
   }
 
