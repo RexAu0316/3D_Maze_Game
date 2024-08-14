@@ -18,7 +18,7 @@ window.initGame = (React, assetsUrl) => {
       position: position,
       geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
       material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
-      rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
+      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
     });
   };
 
