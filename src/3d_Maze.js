@@ -83,13 +83,15 @@ function Player({ wallBoxes, onPositionChange }) {
 
   function Camera({ playerPosition }) {
     const { camera } = useThree();
-    
+
     useEffect(() => {
         const updateCameraPosition = () => {
-            camera.position.set(playerPosition[0], playerPosition[1] + 10, playerPosition[2] + 10); // Adjust height and distance
-            camera.lookAt(playerPosition[0], playerPosition[1], playerPosition[2]); // Look at the player
+            if (playerPosition && playerPosition.length === 3) { // Ensure playerPosition is valid
+                camera.position.set(playerPosition[0], playerPosition[1] + 10, playerPosition[2] + 10); // Adjust height and distance
+                camera.lookAt(playerPosition[0], playerPosition[1], playerPosition[2]); // Look at the player
+            }
         };
-        
+
         // Initial position
         updateCameraPosition();
 
@@ -152,7 +154,7 @@ function Player({ wallBoxes, onPositionChange }) {
       });
     });
     
-    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]); // Initial player position
+     const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]); // Initial player position
 
     return React.createElement(
         React.Fragment,
@@ -169,7 +171,7 @@ function Player({ wallBoxes, onPositionChange }) {
         React.createElement(Camera, { playerPosition }) // Pass playerPosition to Camera
     );
 }
-
+  
   function MazeRunnerGame() {
     const playerRef = useRef();
 
