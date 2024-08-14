@@ -83,17 +83,21 @@ window.initGame = (React, assetsUrl) => {
   function ThirdPersonCamera({ playerRef }) {
     const { camera } = useThree();
 
-    useFrame(() => {
+   useFrame(() => {
       if (playerRef.current) {
+        const playerPosition = playerRef.current.position;
         camera.position.set(
-          playerRef.current.position.x,
-          playerRef.current.position.y + 2,
-          playerRef.current.position.z + 5
+          playerPosition.x,
+          playerPosition.y + 2, // Height offset
+          playerPosition.z + 5   // Depth offset
         );
-        camera.lookAt(playerRef.current.position);
+        camera.lookAt(playerPosition);
+        
+        // Debug logs
+        console.log('Camera Position:', camera.position);
+        console.log('Player Position:', playerPosition);
       }
     });
-
     return null;
   }
 
