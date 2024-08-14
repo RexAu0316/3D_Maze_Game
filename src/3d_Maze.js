@@ -13,16 +13,16 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  const Coin = ({ position }) => {
+    const Coin = ({ position }) => {
     return React.createElement('mesh', {
       position: position,
       geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
       material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
-      rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
+      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
     });
   };
 
-  function Player({ wallBoxes, onPositionChange }) {
+  function Player({ wallBoxes }) {
     const playerRef = useRef();
     const speed = 0.1;
     const keys = useRef({});
@@ -52,7 +52,7 @@ window.initGame = (React, assetsUrl) => {
 
       return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
     };
-
+    
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
@@ -61,64 +61,41 @@ window.initGame = (React, assetsUrl) => {
         if (keys.current['ArrowLeft']) direction.x -= speed;
         if (keys.current['ArrowRight']) direction.x += speed;
 
+        // Calculate the new position based on direction
         const nextPosition = [
           playerRef.current.position.x + direction.x,
           playerRef.current.position.y,
           playerRef.current.position.z + direction.z,
         ];
 
+        // Check for collisions before updating the player's position
         if (!checkCollision(nextPosition)) {
           playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-          onPositionChange(nextPosition); // Notify the camera of the new position
         }
       }
     });
 
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [8.5, 0.5, -8.5],
+      position: [8.5, 0.5, -8.5], // Centered position
       geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
       material: new THREE.MeshStandardMaterial({ color: 'blue' })
     });
   }
 
-  function Camera({ playerPosition }) {
+  function Camera() {
     const { camera } = useThree();
-
     useEffect(() => {
-      const updateCamera = () => {
-        if (playerPosition) {
-          const [x, y, z] = playerPosition;
-          camera.position.set(x, y + 5, z + 5); // Adjust the height and distance
-          camera.lookAt(x, y, z); // Look at the player
-        }
-      };
-
-      updateCamera(); // Initial update
-      const unsubscribe = useFrame(() => updateCamera()); // Update on each frame
-
-      return () => unsubscribe(); // Clean up the frame subscription
-    }, [camera, playerPosition]);
-
+      camera.position.set(0, 20, 20); // Adjusted for maze size
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
     return null;
-  }
-
-  function MazeRunnerGame() {
-    const [playerPosition, setPlayerPosition] = React.useState([8.5, 0.5, -8.5]);
-
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(Camera, { playerPosition }), // Pass player's position to Camera
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze, { setPlayerPosition })
-    );
   }
 
   function Maze() {
     const wallHeight = 1; // Height of the walls
     const mazeLayout = [
+      // ... (your original maze layout)
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
       [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
@@ -167,6 +144,7 @@ window.initGame = (React, assetsUrl) => {
       });
     });
 
+    // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
       null,
@@ -182,5 +160,19 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  console.log('3D Maze Runner game script loaded');
+
+  function MazeRunnerGame() {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Camera),
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze)
+    );
+  }
+
+  return MazeRunnerGame;
 };
+
+console.log('3D Maze Runner game script loaded');
