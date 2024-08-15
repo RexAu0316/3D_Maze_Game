@@ -101,6 +101,9 @@ window.initGame = (React, assetsUrl) => {
         camera.rotation.y -= deltaX * sensitivity;
         camera.rotation.x -= deltaY * sensitivity;
 
+        // Constrain the camera rotation to prevent flipping
+        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
+
         setMouseX(event.clientX);
         setMouseY(event.clientY);
       }
