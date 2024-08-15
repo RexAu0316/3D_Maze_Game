@@ -1,24 +1,20 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
-  const THREE = window.THREE;
-
-  const PlayerModel = React.memo(function PlayerModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
-    const gltf = useLoader(GLTFLoader, url);
-    const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
-
-    useEffect(() => {
-      copiedScene.scale.set(...scale);
-      copiedScene.position.set(...position);
-    }, [copiedScene, scale, position]);
-
-    return React.createElement('primitive', { object: copiedScene });
-  });
+  const { useEffect, useRef } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
 
   function Player() {
     const playerRef = useRef();
     const speed = 0.1;
 
+    // Create a cube to represent the player
+    const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
+    
+    playerMesh.position.set(0, 0.5, 0); // Adjust position to be above the ground
+    playerRef.current = playerMesh;
+
+    // Function to handle keyboard input
     const handleKeyDown = (event) => {
       if (!playerRef.current) return;
 
@@ -42,20 +38,16 @@ window.initGame = (React, assetsUrl) => {
 
     useEffect(() => {
       window.addEventListener('keydown', handleKeyDown);
+      // Add the player mesh to the scene
+      window.scene.add(playerMesh);
+      
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
+        window.scene.remove(playerMesh); // Clean up on unmount
       };
-    }, []);
+    }, [playerMesh]);
 
-    return React.createElement(
-      'mesh', 
-      { ref: playerRef, position: [0, 0, 0] },
-      React.createElement(PlayerModel, { 
-        url: `${assetsUrl}/player.glb`, // Replace with your player model URL
-        scale: [1, 1, 1],
-        position: [0, 0, 0]
-      })
-    );
+    return null; // No need to return anything, as the player is added directly to the scene
   }
 
   function Camera() {
@@ -70,13 +62,14 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function MazeGame() {
+    // Add the player and the camera to the scene
     return React.createElement(
       React.Fragment,
       null,
       React.createElement(Camera),
+      React.createElement(Player),
       React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Player) // Add the player to the scene
+      React.createElement('pointLight', { position: [10, 10, 10] })
     );
   }
 
