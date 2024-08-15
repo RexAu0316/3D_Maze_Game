@@ -3,6 +3,9 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
+  // Ensure OrbitControls is imported
+  const OrbitControls = require('three/examples/jsm/controls/OrbitControls').OrbitControls;
+
   function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
@@ -50,22 +53,29 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function CameraFollow() {
-    const { camera } = useThree();
-    const playerRef = useRef();
+  function CameraControls() {
+    const { camera, gl } = useThree();
+    const controlsRef = useRef();
+
+    useEffect(() => {
+      // OrbitControls setup
+      controlsRef.current = new OrbitControls(camera, gl.domElement);
+      controlsRef.current.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+      controlsRef.current.dampingFactor = 0.25;
+      controlsRef.current.screenSpacePanning = false;
+
+      return () => {
+        controlsRef.current.dispose(); // Clean up controls on unmount
+      };
+    }, [camera, gl]);
 
     useFrame(() => {
-      if (playerRef.current) {
-        // Smoothly update the camera position to follow the player
-        camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
-        );
-        camera.lookAt(playerRef.current.position);
+      if (controlsRef.current) {
+        controlsRef.current.update(); // Update controls in the animation loop
       }
     });
 
-    return React.createElement('group', { ref: playerRef },
+    return React.createElement('group', null,
       React.createElement(Player)
     );
   }
@@ -76,11 +86,11 @@ window.initGame = (React, assetsUrl) => {
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraFollow)
+      React.createElement(CameraControls)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with free camera controls script loaded');
