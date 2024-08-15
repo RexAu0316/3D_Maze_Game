@@ -76,8 +76,8 @@ window.initGame = (React, assetsUrl) => {
     });
 
     return React.createElement('group', { ref: targetRef },
-      React.createElement('mesh', { position: [0, 2, 0] },
-        React.createElement('boxBufferGeometry', { args: [2, 2, 2] }),
+      React.createElement('mesh', { position: [0, 1, 0] }, // Adjusted height for the box
+        React.createElement('boxGeometry', { args: [2, 2, 2] }), // Use boxGeometry
         React.createElement('meshStandardMaterial', { color: '#ff0000' })
       )
     );
@@ -109,7 +109,7 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('ambientLight', { intensity: 1 }),
       React.createElement('spotLight', { position: [10, 10, 10] }),
       React.createElement('mesh', { rotation: [-Math.PI * 0.5, 0, 0], position: [0, 0, 0] },
-        React.createElement('planeBufferGeometry', { args: [50, 50] }),
+        React.createElement('planeGeometry', { args: [50, 50] }), // Use planeGeometry
         React.createElement('meshStandardMaterial', { color: 'green' })
       ),
       React.createElement(CameraFollow)
