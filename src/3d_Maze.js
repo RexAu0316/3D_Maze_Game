@@ -83,14 +83,31 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-  function Camera() {
-    const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
-  }
+function Camera({ playerRef }) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const updateCameraPosition = () => {
+      if (playerRef.current) {
+        // Position the camera above the player
+        camera.position.x = playerRef.current.position.x;
+        camera.position.y = 20; // Fixed height
+        camera.position.z = playerRef.current.position.z + 10; // Follow behind the player
+
+        // Make the camera look at the player
+        camera.lookAt(playerRef.current.position);
+      }
+    };
+
+    const unsubscribe = useFrame(updateCameraPosition);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [camera, playerRef]);
+
+  return null;
+}
 
   function Maze() {
     const wallHeight = 1; // Height of the walls
