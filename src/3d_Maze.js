@@ -49,11 +49,13 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function CameraFollow({ playerRef }) {
-    const { camera } = useThree();
+function CameraFollow({ playerRef }) {
+  const { camera } = useThree();
+  const [moving, setMoving] = useState(false);
 
-    useFrame(() => {
-      if (playerRef.current) {
+  useFrame(() => {
+    if (playerRef.current) {
+      if (moving) {
         // Smoothly update the camera position to follow the player
         camera.position.lerp(
           new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
@@ -61,10 +63,33 @@ window.initGame = (React, assetsUrl) => {
         );
         camera.lookAt(playerRef.current.position);
       }
-    });
+    }
+  });
 
-    return null; // Nothing to render
-  }
+  // Additional useEffect to manage moving state
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (['w', 'a', 's', 'd'].includes(event.key)) {
+        setMoving(true);
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (['w', 'a', 's', 'd'].includes(event.key)) {
+        setMoving(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  return null; // Nothing to render
+}
 
   function createMaze() {
   // Maze layout - 1 represents a wall, 0 represents open space
@@ -80,7 +105,7 @@ window.initGame = (React, assetsUrl) => {
 
   const walls = [];
   const wallHeight = 1;
-  const wallThickness = 0.5;
+  const wallThickness = 1;
 
   mazeLayout.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
