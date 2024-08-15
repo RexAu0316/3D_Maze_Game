@@ -31,6 +31,7 @@ window.initGame = (React, assetsUrl) => {
 
     useFrame(() => {
       if (playerRef.current) {
+        // Update camera position based on player position
         camera.position.copy(playerRef.current.position.clone().add(new THREE.Vector3(0, 2, -5)));
         camera.lookAt(playerRef.current.position);
       }
@@ -77,56 +78,54 @@ window.initGame = (React, assetsUrl) => {
   };
 
   const MouseControlledCamera = () => {
-  const { camera } = useThree();
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-  const sensitivity = 0.1;
+    const { camera } = useThree();
+    const [isMouseDown, setIsMouseDown] = useState(false);
+    const [mouseX, setMouseX] = useState(0);
+    const [mouseY, setMouseY] = useState(0);
+    const sensitivity = 0.1;
 
-  const handleMouseDown = (event) => {
-    if (event.button === 0) { // Left mouse button
-      console.log("Mouse down");
-      setIsMouseDown(true);
-      setMouseX(event.clientX);
-      setMouseY(event.clientY);
-    }
-  };
-
-  const handleMouseUp = () => {
-    console.log("Mouse up");
-    setIsMouseDown(false);
-  };
-
-  const handleMouseMove = (event) => {
-    if (isMouseDown) {
-      const deltaX = event.clientX - mouseX;
-      const deltaY = event.clientY - mouseY;
-
-      camera.rotation.y -= deltaX * sensitivity;
-      camera.rotation.x -= deltaY * sensitivity;
-
-      // Constrain the camera rotation to prevent flipping
-      camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
-
-      setMouseX(event.clientX);
-      setMouseY(event.clientY);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('mousemove', handleMouseMove);
+    const handleMouseDown = (event) => {
+      if (event.button === 0) { // Left mouse button
+        setIsMouseDown(true);
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
     };
-  }, [isMouseDown]);
 
-  return null;
-};
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+    };
+
+    const handleMouseMove = (event) => {
+      if (isMouseDown) {
+        const deltaX = event.clientX - mouseX;
+        const deltaY = event.clientY - mouseY;
+
+        camera.rotation.y -= deltaX * sensitivity;
+        camera.rotation.x -= deltaY * sensitivity;
+
+        // Constrain the camera rotation to prevent flipping
+        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
+
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMouseMove);
+
+      return () => {
+        window.removeEventListener('mousedown', handleMouseDown);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, [isMouseDown]);
+
+    return null;
+  };
 
   function Maze() {
     const walls = [
