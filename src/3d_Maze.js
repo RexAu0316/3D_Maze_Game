@@ -8,24 +8,22 @@ function Camera({ playerRef }) {
   const controlsRef = useRef();
 
   useEffect(() => {
-    // Initialize OrbitControls
     const controls = new THREE.OrbitControls(camera, gl.domElement);
-    controls.enableDamping = true; // Smooth movement
+    controls.enableDamping = true; 
     controls.dampingFactor = 0.25;
-    controls.enableZoom = true; // Allow zooming
-    controls.enablePan = false; // Disable panning
-    controls.minDistance = 2; // Minimum zoom distance
-    controls.maxDistance = 10; // Maximum zoom distance
+    controls.enableZoom = true; 
+    controls.enablePan = false; 
+    controls.minDistance = 2; 
+    controls.maxDistance = 10; 
 
-    controlsRef.current = controls; // Store controls reference
+    controlsRef.current = controls; 
     return () => {
-      controls.dispose(); // Clean up on unmount
+      controls.dispose(); 
     };
   }, [camera, gl]);
 
   useFrame(() => {
     if (playerRef.current) {
-      // Update the controls target to follow the player
       controlsRef.current.target.copy(playerRef.current.position);
       controlsRef.current.update();
     }
@@ -36,7 +34,7 @@ function Camera({ playerRef }) {
 
 // Player component
 function Player({ playerRef }) {
-  const speed = 0.1; // Movement speed
+  const speed = 0.1; 
   const keys = { w: false, a: false, s: false, d: false };
 
   const handleKeyDown = (event) => {
@@ -69,17 +67,16 @@ function Player({ playerRef }) {
       if (keys.a) direction.x -= speed;
       if (keys.d) direction.x += speed;
 
-      // Normalize direction to maintain consistent speed
       direction.normalize();
       playerRef.current.position.add(direction);
     }
   });
 
-  return (
-    <mesh ref={playerRef} position={[0, 0, 0]}>
-      <boxGeometry args={[0.5, 1, 0.5]} />
-      <meshStandardMaterial color="blue" />
-    </mesh>
+  return React.createElement(
+    'mesh',
+    { ref: playerRef, position: [0, 0, 0] },
+    React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
+    React.createElement('meshStandardMaterial', { color: 'blue' })
   );
 }
 
@@ -96,20 +93,17 @@ function createMaze() {
   ];
 
   const walls = [];
-  const wallHeight = 1; // Height of the wall
+  const wallHeight = 1; 
   const wallThickness = 1;
 
   mazeLayout.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
       if (cell === 1) {
-        const wall = (
-          <mesh
-            position={[colIndex, wallHeight / 2, -rowIndex]}
-            key={`wall-${rowIndex}-${colIndex}`}
-          >
-            <boxGeometry args={[wallThickness, wallHeight, wallThickness]} />
-            <meshStandardMaterial color="gray" />
-          </mesh>
+        const wall = React.createElement(
+          'mesh',
+          { position: [colIndex, wallHeight / 2, -rowIndex], key: `wall-${rowIndex}-${colIndex}` },
+          React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
+          React.createElement('meshStandardMaterial', { color: 'gray' })
         );
         walls.push(wall);
       }
@@ -123,17 +117,17 @@ function createMaze() {
 function MazeRunnerGame() {
   const playerRef = useRef();
 
-  return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <Camera playerRef={playerRef} />
-      <Player playerRef={playerRef} />
-      {createMaze()}
-    </Canvas>
+  return React.createElement(
+    Canvas,
+    null,
+    React.createElement('ambientLight', null),
+    React.createElement('pointLight', { position: [10, 10, 10] }),
+    React.createElement(Camera, { playerRef: playerRef }),
+    React.createElement(Player, { playerRef: playerRef }),
+    createMaze()
   );
 }
 
 // Render the game
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<MazeRunnerGame />);
+root.render(React.createElement(MazeRunnerGame));
