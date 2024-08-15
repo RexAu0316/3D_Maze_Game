@@ -1,79 +1,86 @@
 window.initGame = (React, assetsUrl) => {
-  const { useEffect, useRef } = React;
+  const { useRef, useEffect } = React;
   const { useFrame, useThree } = window.ReactThreeFiber;
+  const THREE = window.THREE;
 
   function Player() {
     const playerRef = useRef();
-    const speed = 0.1;
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
 
-    // Create a cube to represent the player
-    const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
-    
-    playerMesh.position.set(0, 0.5, 0); // Adjust position to be above the ground
-    playerRef.current = playerMesh;
-
-    // Function to handle keyboard input
     const handleKeyDown = (event) => {
-      if (!playerRef.current) return;
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
 
-      switch (event.key) {
-        case 'w':
-          playerRef.current.position.z -= speed;
-          break;
-        case 's':
-          playerRef.current.position.z += speed;
-          break;
-        case 'a':
-          playerRef.current.position.x -= speed;
-          break;
-        case 'd':
-          playerRef.current.position.x += speed;
-          break;
-        default:
-          break;
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
       }
     };
 
     useEffect(() => {
       window.addEventListener('keydown', handleKeyDown);
-      // Add the player mesh to the scene
-      window.scene.add(playerMesh);
-      
+      window.addEventListener('keyup', handleKeyUp);
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
-        window.scene.remove(playerMesh); // Clean up on unmount
+        window.removeEventListener('keyup', handleKeyUp);
       };
-    }, [playerMesh]);
+    }, []);
 
-    return null; // No need to return anything, as the player is added directly to the scene
-  }
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
 
-  function Camera() {
-    const { camera } = useThree();
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
-    useEffect(() => {
-      camera.position.set(0, 10, 15);
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
+      }
+    });
 
-    return null;
-  }
-
-  function MazeGame() {
-    // Add the player and the camera to the scene
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(Camera),
-      React.createElement(Player),
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] })
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  return MazeGame;
+  function CameraFollow() {
+    const { camera } = useThree();
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
+    });
+
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
+  }
+
+  function GameScene() {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(CameraFollow)
+    );
+  }
+
+  return GameScene;
 };
 
-console.log('3D Maze game script loaded');
+console.log('Updated player movement with camera follow script loaded');
