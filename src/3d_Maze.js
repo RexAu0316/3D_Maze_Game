@@ -76,6 +76,45 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+  const MouseControlledCamera = () => {
+    const { camera } = useThree();
+    const [isMouseDown, setIsMouseDown] = useState(false);
+    const [mouseX, setMouseX] = useState(0);
+    const [mouseY, setMouseY] = useState(0);
+    const sensitivity = 0.1;
+
+    const handleMouseDown = () => setIsMouseDown(true);
+    const handleMouseUp = () => setIsMouseDown(false);
+    const handleMouseMove = (event) => {
+      if (isMouseDown) {
+        const deltaX = event.clientX - mouseX;
+        const deltaY = event.clientY - mouseY;
+
+        camera.rotation.y -= deltaX * sensitivity;
+        camera.rotation.x -= deltaY * sensitivity;
+
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMouseMove);
+      setMouseX(window.innerWidth / 2);
+      setMouseY(window.innerHeight / 2);
+
+      return () => {
+        window.removeEventListener('mousedown', handleMouseDown);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, [isMouseDown]);
+
+    return null;
+  };
+
   function Maze() {
     const walls = [
       [-3, 1, 0], [3, 1, 0],
@@ -118,6 +157,7 @@ window.initGame = (React, assetsUrl) => {
       React.Fragment,
       null,
       React.createElement(Camera),
+      React.createElement(MouseControlledCamera),  // Add MouseControlledCamera here
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze)
