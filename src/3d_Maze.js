@@ -1,7 +1,8 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef } = React;
-  const { useFrame, useThree } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef, Suspense, useMemo } = React;
+  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
+  const { GLTFLoader } = window.THREE;
 
   const Wall = ({ position }) => {
     const wallRef = useRef();
@@ -76,50 +77,13 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  const MouseControlledCamera = () => {
+  const Camera = () => {
     const { camera } = useThree();
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const [mouseX, setMouseX] = useState(0);
-    const [mouseY, setMouseY] = useState(0);
-    const sensitivity = 0.1;
-
-    const handleMouseDown = (event) => {
-      if (event.button === 0) { // Left mouse button
-        setIsMouseDown(true);
-        setMouseX(event.clientX);
-        setMouseY(event.clientY);
-      }
-    };
-
-    const handleMouseUp = () => setIsMouseDown(false);
     
-    const handleMouseMove = (event) => {
-      if (isMouseDown) {
-        const deltaX = event.clientX - mouseX;
-        const deltaY = event.clientY - mouseY;
-
-        camera.rotation.y -= deltaX * sensitivity;
-        camera.rotation.x -= deltaY * sensitivity;
-
-        // Constrain the camera rotation to prevent flipping
-        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
-
-        setMouseX(event.clientX);
-        setMouseY(event.clientY);
-      }
-    };
-
     useEffect(() => {
-      window.addEventListener('mousedown', handleMouseDown);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('mousemove', handleMouseMove);
-
-      return () => {
-        window.removeEventListener('mousedown', handleMouseDown);
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('mousemove', handleMouseMove);
-      };
-    }, [isMouseDown]);
+      camera.position.set(0, 5, 10);
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
 
     return null;
   };
@@ -150,15 +114,70 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function Camera() {
-    const { camera } = useThree();
-    
-    useEffect(() => {
-      camera.position.set(0, 5, 10);
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
+  function WhackAMole3D() {
+    const [moles, setMoles] = useState(Array(9).fill(false));
+    const [score, setScore] = useState(0);
 
-    return null;
+    useEffect(() => {
+      const popUpMole = () => {
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          const inactiveIndices = newMoles.reduce((acc, mole, index) => !mole ? [...acc, index] : acc, []);
+          if (inactiveIndices.length > 0) {
+            const randomIndex = inactiveIndices[Math.floor(Math.random() * inactiveIndices.length)];
+            newMoles[randomIndex] = true;
+          }
+          return newMoles;
+        });
+      };
+
+      const popDownMole = () => {
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          const activeIndices = newMoles.reduce((acc, mole, index) => mole ? [...acc, index] : acc, []);
+          if (activeIndices.length > 0) {
+            const randomIndex = activeIndices[Math.floor(Math.random() * activeIndices.length)];
+            newMoles[randomIndex] = false;
+          }
+          return newMoles;
+        });
+      };
+
+      const popUpInterval = setInterval(popUpMole, 1000);
+      const popDownInterval = setInterval(popDownMole, 2000);
+
+      return () => {
+        clearInterval(popUpInterval);
+        clearInterval(popDownInterval);
+      };
+    }, []);
+
+    const whackMole = (index) => {
+      if (moles[index]) {
+        setScore(prevScore => prevScore + 1);
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          newMoles[index] = false;
+          return newMoles;
+        });
+      }
+    };
+
+    return React.createElement(
+      React.Fragment,
+      null,
+      moles.map((isActive, index) => 
+        React.createElement(Collectible, {
+          key: index,
+          position: [
+            (index % 3 - 1) * 4,
+            0,
+            (Math.floor(index / 3) - 1) * 4
+          ],
+          onCollect: () => whackMole(index)
+        })
+      )
+    );
   }
 
   function MazeGame() {
@@ -166,10 +185,10 @@ window.initGame = (React, assetsUrl) => {
       React.Fragment,
       null,
       React.createElement(Camera),
-      React.createElement(MouseControlledCamera),  // Added MouseControlledCamera here
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze)
+      React.createElement(Maze),
+      React.createElement(WhackAMole3D) // Adding Whack-a-Mole interaction in the maze
     );
   }
 
