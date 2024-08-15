@@ -76,55 +76,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  const MouseControlledCamera = () => {
-    const { camera } = useThree();
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const [mouseX, setMouseX] = useState(0);
-    const [mouseY, setMouseY] = useState(0);
-    const sensitivity = 0.1;
-
-    const handleMouseDown = (event) => {
-      if (event.button === 0) { // Left mouse button
-        setIsMouseDown(true);
-        setMouseX(event.clientX);
-        setMouseY(event.clientY);
-      }
-    };
-
-    const handleMouseUp = () => setIsMouseDown(false);
-    
-    const handleMouseMove = (event) => {
-      if (isMouseDown) {
-        const deltaX = event.clientX - mouseX;
-        const deltaY = event.clientY - mouseY;
-
-        camera.rotation.y -= deltaX * sensitivity;
-        camera.rotation.x -= deltaY * sensitivity;
-
-        // Constrain the camera rotation to prevent flipping
-        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
-
-        setMouseX(event.clientX);
-        setMouseY(event.clientY);
-      }
-    };
-
-    useEffect(() => {
-      window.addEventListener('mousedown', handleMouseDown);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('mousemove', handleMouseMove);
-
-      return () => {
-        window.removeEventListener('mousedown', handleMouseDown);
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('mousemove', handleMouseMove);
-      };
-    }, [isMouseDown]);
-
-    return null;
-  };
-
-  function Maze() {
+  const Maze = () => {
     const walls = [
       [-3, 1, 0], [3, 1, 0],
       [0, 1, -3], [0, 1, 3],
@@ -148,7 +100,7 @@ window.initGame = (React, assetsUrl) => {
       collectibles.map((pos, index) => React.createElement(Collectible, { key: index, position: pos, onCollect: () => collectItem(pos) })),
       React.createElement(Player)
     );
-  }
+  };
 
   function Camera() {
     const { camera } = useThree();
@@ -166,14 +118,16 @@ window.initGame = (React, assetsUrl) => {
       React.Fragment,
       null,
       React.createElement(Camera),
-      React.createElement(MouseControlledCamera),  // Added MouseControlledCamera here
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze)
     );
   }
 
-  return MazeGame;
-};
+  const App = () => {
+    return React.createElement(MazeGame);
+  };
 
-console.log('3D Maze game script loaded');
+  ReactDOM.render(React.createElement(App), document.getElementById('root'));
+  console.log('3D Maze game script loaded');
+};
