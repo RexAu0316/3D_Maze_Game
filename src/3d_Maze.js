@@ -3,6 +3,7 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
+  // Wall Component
   const Wall = ({ position }) => {
     const wallRef = useRef();
     return React.createElement('mesh', {
@@ -13,6 +14,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+  // Collectible Component
   const Collectible = ({ position, onCollect }) => {
     const collectibleRef = useRef();
     return React.createElement('mesh', {
@@ -24,6 +26,7 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
+  // Player Component
   const Player = () => {
     const playerRef = useRef();
     const { camera } = useThree();
@@ -76,7 +79,57 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  const Maze = () => {
+  // MouseControlledCamera Component
+  const MouseControlledCamera = () => {
+    const { camera } = useThree();
+    const [isMouseDown, setIsMouseDown] = useState(false);
+    const [mouseX, setMouseX] = useState(0);
+    const [mouseY, setMouseY] = useState(0);
+    const sensitivity = 0.1;
+
+    const handleMouseDown = (event) => {
+      if (event.button === 0) { // Left mouse button
+        setIsMouseDown(true);
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
+    };
+
+    const handleMouseUp = () => setIsMouseDown(false);
+    
+    const handleMouseMove = (event) => {
+      if (isMouseDown) {
+        const deltaX = event.clientX - mouseX;
+        const deltaY = event.clientY - mouseY;
+
+        camera.rotation.y -= deltaX * sensitivity;
+        camera.rotation.x -= deltaY * sensitivity;
+
+        // Constrain the camera rotation to prevent flipping
+        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
+
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMouseMove);
+
+      return () => {
+        window.removeEventListener('mousedown', handleMouseDown);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, [isMouseDown]);
+
+    return null;
+  };
+
+  // Maze Component
+  function Maze() {
     const walls = [
       [-3, 1, 0], [3, 1, 0],
       [0, 1, -3], [0, 1, 3],
@@ -100,8 +153,9 @@ window.initGame = (React, assetsUrl) => {
       collectibles.map((pos, index) => React.createElement(Collectible, { key: index, position: pos, onCollect: () => collectItem(pos) })),
       React.createElement(Player)
     );
-  };
+  }
 
+  // Camera Component
   function Camera() {
     const { camera } = useThree();
     
@@ -113,21 +167,20 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
+  // Main Game Component
   function MazeGame() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement(Camera),
+      React.createElement(MouseControlledCamera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze)
     );
   }
 
-  const App = () => {
-    return React.createElement(MazeGame);
-  };
-
-  ReactDOM.render(React.createElement(App), document.getElementById('root'));
-  console.log('3D Maze game script loaded');
+  return MazeGame;
 };
+
+console.log('3D Maze game script loaded');
