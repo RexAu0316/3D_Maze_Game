@@ -3,29 +3,7 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  // MazeWall component
-  const MazeWall = ({ position, scale }) => {
-    return React.createElement('mesh', {
-      position: position,
-      scale: scale,
-      geometry: new THREE.BoxGeometry(1, 1, 1),
-      material: new THREE.MeshStandardMaterial({ color: 'gray' }),
-    });
-  };
-
-  // Coin component
-  const Coin = ({ position }) => {
-    return React.createElement('mesh', {
-      position: position,
-      geometry: new THREE.CircleGeometry(0.5, 32),
-      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }),
-      rotation: [Math.PI / 2, 0, 0], // Rotate to lie flat on the ground
-    });
-  };
-
-  // Player component
-  function Player() {
-    const playerRef = useRef();
+  function Player({ playerRef }) {
     const speed = 0.2; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
 
@@ -65,16 +43,14 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0.5, -8.5] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  // CameraFollow component
-  function CameraFollow() {
+  function CameraFollow({ playerRef }) {
     const { camera } = useThree();
-    const playerRef = useRef();
 
     useFrame(() => {
       if (playerRef.current) {
@@ -87,78 +63,19 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('group', { ref: playerRef },
-      React.createElement(Player)
-    );
+    return null; // Nothing to render
   }
 
-  // Maze component to generate walls and coins
-  function Maze() {
-    const wallHeight = 1;
-    const mazeLayout = [
-     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
-      [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
-      [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-      [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1],
-      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    ];
-
-    const wallPositions = [];
-
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) { // Wall
-          const position = [
-            colIndex - mazeLayout[0].length / 2 + 0.5,
-            wallHeight / 2,
-            rowIndex - mazeLayout.length / 2 + 0.5,
-          ];
-          wallPositions.push({
-            position: position,
-            scale: [1, wallHeight, 1]
-          });
-        }
-      });
-    });
-
-    return React.createElement(
-      React.Fragment,
-      null,
-      wallPositions.map((wall, index) =>
-        React.createElement(MazeWall, {
-          key: index,
-          position: wall.position,
-          scale: wall.scale
-        })
-      ),
-      React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add a coin at the specified position
-    );
-  }
-
-  // Main game component
   function GameScene() {
+    const playerRef = useRef(); // Create a ref for the player
+
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze),
-      React.createElement(CameraFollow) // Include CameraFollow here
+      React.createElement(Player, { playerRef }), // Pass the playerRef to Player
+      React.createElement(CameraFollow, { playerRef }) // Pass the playerRef to CameraFollow
     );
   }
 
