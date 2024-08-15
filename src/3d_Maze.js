@@ -1,60 +1,103 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef } = React;
+  const { useEffect, useRef } = React;
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Player() {
-    const playerRef = useRef();
-    const speed = 0.1; // Movement speed
-
-    const movePlayer = (event) => {
-      if (!playerRef.current) return;
-
-      switch (event.key) {
-        case 'w':
-          playerRef.current.position.z -= speed; // Move forward
-          break;
-        case 's':
-          playerRef.current.position.z += speed; // Move backward
-          break;
-        case 'a':
-          playerRef.current.position.x -= speed; // Move left
-          break;
-        case 'd':
-          playerRef.current.position.x += speed; // Move right
-          break;
-        default:
-          break;
-      }
-    };
+  // Custom hook for keyboard controls
+  const useKeyboardControls = () => {
+    const [keys, setKeys] = React.useState({
+      moveForward: false,
+      moveBackward: false,
+      moveLeft: false,
+      moveRight: false,
+    });
 
     useEffect(() => {
-      window.addEventListener('keydown', movePlayer);
-      return () => window.removeEventListener('keydown', movePlayer);
+      const handleKeyDown = (event) => {
+        switch (event.key) {
+          case 'w':
+            setKeys((prev) => ({ ...prev, moveForward: true }));
+            break;
+          case 's':
+            setKeys((prev) => ({ ...prev, moveBackward: true }));
+            break;
+          case 'a':
+            setKeys((prev) => ({ ...prev, moveLeft: true }));
+            break;
+          case 'd':
+            setKeys((prev) => ({ ...prev, moveRight: true }));
+            break;
+          default:
+            break;
+        }
+      };
+
+      const handleKeyUp = (event) => {
+        switch (event.key) {
+          case 'w':
+            setKeys((prev) => ({ ...prev, moveForward: false }));
+            break;
+          case 's':
+            setKeys((prev) => ({ ...prev, moveBackward: false }));
+            break;
+          case 'a':
+            setKeys((prev) => ({ ...prev, moveLeft: false }));
+            break;
+          case 'd':
+            setKeys((prev) => ({ ...prev, moveRight: false }));
+            break;
+          default:
+            break;
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
     }, []);
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
-      React.createElement('boxGeometry', { args: [1, 1, 1] }),
-      React.createElement('meshStandardMaterial', { color: 'blue' })
+    return keys;
+  };
+
+  function Player() {
+    const targetRef = useRef();
+    const { moveForward, moveBackward, moveLeft, moveRight } = useKeyboardControls();
+    const speed = 0.2; // Movement speed
+
+    useFrame(() => {
+      if (targetRef.current) {
+        targetRef.current.position.x += moveRight ? speed : moveLeft ? -speed : 0;
+        targetRef.current.position.z += moveForward ? -speed : moveBackward ? speed : 0;
+      }
+    });
+
+    return React.createElement('group', { ref: targetRef },
+      React.createElement('mesh', { position: [0, 2, 0] },
+        React.createElement('boxBufferGeometry', { args: [2, 2, 2] }),
+        React.createElement('meshStandardMaterial', { color: '#ff0000' })
+      )
     );
   }
 
   function CameraFollow() {
     const { camera } = useThree();
-    const playerRef = useRef();
+    const targetRef = useRef();
 
     useFrame(() => {
-      if (playerRef.current) {
-        // Update camera position to follow the player
+      if (targetRef.current) {
         camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          new THREE.Vector3(targetRef.current.position.x, targetRef.current.position.y + 5, targetRef.current.position.z + 10),
           0.1 // Smoothness factor
         );
-        camera.lookAt(playerRef.current.position);
+        camera.lookAt(targetRef.current.position);
       }
     });
 
-    return React.createElement('group', { ref: playerRef },
+    return React.createElement('group', { ref: targetRef },
       React.createElement(Player)
     );
   }
@@ -63,8 +106,12 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement('ambientLight', { intensity: 1 }),
+      React.createElement('spotLight', { position: [10, 10, 10] }),
+      React.createElement('mesh', { rotation: [-Math.PI * 0.5, 0, 0], position: [0, 0, 0] },
+        React.createElement('planeBufferGeometry', { args: [50, 50] }),
+        React.createElement('meshStandardMaterial', { color: 'green' })
+      ),
       React.createElement(CameraFollow)
     );
   }
@@ -72,4 +119,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Player movement with camera follow script loaded');
+console.log('Updated player movement with camera follow script loaded');
