@@ -1,5 +1,5 @@
 window.initGame = (React, assetsUrl) => {
-  const { useEffect, useRef } = React;
+  const { useRef, useEffect } = React;
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
@@ -24,20 +24,24 @@ window.initGame = (React, assetsUrl) => {
   };
 
   // Player component
-  function Player({ wallBoxes }) {
+  function Player() {
     const playerRef = useRef();
-    const speed = 0.1;
-    const keys = useRef({});
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
 
     useEffect(() => {
-      const handleKeyDown = (event) => {
-        keys.current[event.key] = true;
-      };
-
-      const handleKeyUp = (event) => {
-        keys.current[event.key] = false;
-      };
-
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
       return () => {
@@ -46,58 +50,53 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        new THREE.Vector3(...nextPosition),
-        new THREE.Vector3(0.5, 1, 0.5)
-      );
-
-      return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
-    };
-    
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
 
-        const nextPosition = [
-          playerRef.current.position.x + direction.x,
-          playerRef.current.position.y,
-          playerRef.current.position.z + direction.z,
-        ];
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
-        if (!checkCollision(nextPosition)) {
-          playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-        }
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
     });
 
-    return React.createElement('mesh', {
-      ref: playerRef,
-      position: [8.5, 0.5, -8.5],
-      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-      material: new THREE.MeshStandardMaterial({ color: 'blue' })
-    });
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
+    );
   }
 
-  // Camera component
-  function Camera() {
+  // CameraFollow component
+  function CameraFollow() {
     const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20);
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
+    });
+
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
   }
 
   // Maze component to generate walls and coins
   function Maze() {
     const wallHeight = 1;
     const mazeLayout = [
-       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
       [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -120,7 +119,6 @@ window.initGame = (React, assetsUrl) => {
     ];
 
     const wallPositions = [];
-    const wallBoxes = [];
 
     mazeLayout.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
@@ -134,12 +132,6 @@ window.initGame = (React, assetsUrl) => {
             position: position,
             scale: [1, wallHeight, 1]
           });
-
-          const wallBox = new THREE.Box3().setFromCenterAndSize(
-            new THREE.Vector3(...position),
-            new THREE.Vector3(1, wallHeight, 1)
-          );
-          wallBoxes.push(wallBox);
         }
       });
     });
@@ -154,24 +146,23 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
       React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add a coin at the specified position
     );
   }
 
   // Main game component
-  function MazeRunnerGame() {
+  function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze)
+      React.createElement(Maze),
+      React.createElement(CameraFollow) // Include CameraFollow here
     );
   }
 
-  return MazeRunnerGame;
+  return GameScene;
 };
 
-console.log('3D Maze Runner game script loaded');
+console.log('Updated player movement with camera follow script loaded');
