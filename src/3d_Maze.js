@@ -166,7 +166,7 @@ window.initGame = (React, assetsUrl) => {
       React.Fragment,
       null,
       React.createElement(Camera),
-      React.createElement(MouseControlledCamera),  // Add MouseControlledCamera here
+      React.createElement(MouseControlledCamera),  // Added MouseControlledCamera here
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze)
