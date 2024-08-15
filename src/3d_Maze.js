@@ -82,22 +82,29 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function ThirdPersonCamera({ playerRef }) {
-    const { camera } = useThree();
-    const offset = new THREE.Vector3(0, 5, -10);
-    const [mouseX, setMouseX] = useState(0);
-    const [mouseY, setMouseY] = useState(0);
+  const { camera } = useThree();
+  const offset = new THREE.Vector3(0, 2, -5); // Change this to control the camera position
+  const rotationSpeed = 0.1; // Speed at which the camera rotates to follow the player
 
-    useEffect(() => {
-      const handleMouseMove = (event) => {
-        setMouseX(event.clientX);
-        setMouseY(event.clientY);
-      };
+  useFrame(() => {
+    if (playerRef.current) {
+      const playerPosition = playerRef.current.position;
 
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-      };
-    }, []);
+      // Set camera position behind the player
+      camera.position.copy(playerPosition).add(offset);
+
+      // Ensure the camera looks at the player
+      camera.lookAt(playerPosition);
+
+      // Optional: Smoothly interpolate camera rotation
+      const targetRotation = new THREE.Vector3(0, playerRef.current.rotation.y, 0);
+      camera.rotation.x += (targetRotation.x - camera.rotation.x) * rotationSpeed;
+      camera.rotation.y += (targetRotation.y - camera.rotation.y) * rotationSpeed;
+    }
+  });
+
+  return null;
+}
 
     useFrame(() => {
       if (playerRef.current) {
