@@ -22,20 +22,23 @@ window.initGame = (React, assetsUrl) => {
     });
   };
 
-  function Player({ wallBoxes }) {
-    const playerRef = useRef();
-    const speed = 0.1;
-    const keys = useRef({});
+  function Player({ playerRef }) {
+    const speed = 0.1; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
 
     useEffect(() => {
-      const handleKeyDown = (event) => {
-        keys.current[event.key] = true;
-      };
-
-      const handleKeyUp = (event) => {
-        keys.current[event.key] = false;
-      };
-
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
       return () => {
@@ -44,41 +47,28 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        new THREE.Vector3(...nextPosition),
-        new THREE.Vector3(0.5, 1, 0.5)
-      );
-
-      return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
-    };
-
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
 
-        const nextPosition = [
-          playerRef.current.position.x + direction.x,
-          playerRef.current.position.y,
-          playerRef.current.position.z + direction.z,
-        ];
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
-        if (!checkCollision(nextPosition)) {
-          playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-        }
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
     });
 
     return React.createElement('mesh', {
       ref: playerRef,
-      position: [8.5, 0.5, -8.5],
-      geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-      material: new THREE.MeshStandardMaterial({ color: 'blue' })
-    });
+      position: [0, 0.5, 0],
+    },
+      React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
+    );
   }
 
   function CameraFollow({ playerRef }) {
@@ -161,9 +151,9 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
-      React.createElement(Player, { wallBoxes, ref: playerRef }),
+      React.createElement(Player, { playerRef }), // Pass the playerRef to Player
       React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }),
-      React.createElement(CameraFollow, { playerRef }) // Using the new CameraFollow function
+      React.createElement(CameraFollow, { playerRef }) // Use CameraFollow to follow the player
     );
   }
 
