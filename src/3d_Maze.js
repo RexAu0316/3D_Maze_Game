@@ -68,7 +68,7 @@ function createMaze() {
   mazeLayout.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
       if (cell === 1) {
-        // Create a wall mesh at y = wallHeight / 2 to place it on the ground
+        // Create a wall mesh positioned at y = wallHeight / 2 to align the base with the player
         const wall = React.createElement('mesh', {
           position: [colIndex, wallHeight / 2, -rowIndex],
           key: `wall-${rowIndex}-${colIndex}`
@@ -84,6 +84,41 @@ function createMaze() {
   return walls;
 }
 
+function createMaze() {
+  // Maze layout - 1 represents a wall, 0 represents open space
+  const mazeLayout = [
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+  ];
+
+  const walls = [];
+  const wallHeight = 1; // Height of the wall
+  const wallThickness = 1;
+
+  mazeLayout.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (cell === 1) {
+        // Create a wall mesh positioned at y = wallHeight / 2 to align the base with the player
+        const wall = React.createElement('mesh', {
+          position: [colIndex, wallHeight / 2, -rowIndex],
+          key: `wall-${rowIndex}-${colIndex}`
+        },
+          React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
+          React.createElement('meshStandardMaterial', { color: 'gray' })
+        );
+        walls.push(wall);
+      }
+    });
+  });
+
+  return walls;
+}
+  
 function CameraFollow({ playerRef }) {
   const { camera } = useThree();
   const offset = new THREE.Vector3(0, 5, 10); // Offset from the player
