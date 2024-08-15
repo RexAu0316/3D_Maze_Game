@@ -50,24 +50,23 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function CameraFollow() {
-    const { camera } = useThree();
-    const playerRef = useRef();
+  function CameraControls() {
+    const { camera, gl } = useThree();
+    const controlsRef = useRef();
 
-    useFrame(() => {
-      if (playerRef.current) {
-        // Smoothly update the camera position to follow the player
-        camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
-        );
-        camera.lookAt(playerRef.current.position);
-      }
-    });
+    useEffect(() => {
+      const controls = new THREE.OrbitControls(camera, gl.domElement);
+      controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+      controls.dampingFactor = 0.25;
+      controls.screenSpacePanning = false; // prevent panning out of the scene
+      controls.maxPolarAngle = Math.PI / 2; // limit vertical rotation
 
-    return React.createElement('group', { ref: playerRef },
-      React.createElement(Player)
-    );
+      return () => {
+        controls.dispose(); // Clean up controls on component unmount
+      };
+    }, [camera, gl]);
+
+    return null; // No visible component to render
   }
 
   function GameScene() {
@@ -76,11 +75,12 @@ window.initGame = (React, assetsUrl) => {
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraFollow)
+      React.createElement(CameraControls),
+      React.createElement(Player)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with camera controls script loaded');
