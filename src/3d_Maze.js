@@ -66,18 +66,55 @@ window.initGame = (React, assetsUrl) => {
     return null; // Nothing to render
   }
 
-  function GameScene() {
-    const playerRef = useRef(); // Create a ref for the player
+  function createMaze() {
+  // Maze layout - 1 represents a wall, 0 represents open space
+  const mazeLayout = [
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+  ];
 
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Player, { playerRef }), // Pass the playerRef to Player
-      React.createElement(CameraFollow, { playerRef }) // Pass the playerRef to CameraFollow
-    );
-  }
+  const walls = [];
+  const wallHeight = 1;
+  const wallThickness = 0.5;
+
+  mazeLayout.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (cell === 1) {
+        // Create a wall mesh
+        const wall = React.createElement('mesh', {
+          position: [colIndex, wallHeight / 2, -rowIndex],
+          key: `wall-${rowIndex}-${colIndex}`
+        },
+          React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
+          React.createElement('meshStandardMaterial', { color: 'gray' })
+        );
+        walls.push(wall);
+      }
+    });
+  });
+
+  return walls;
+}
+
+function GameScene() {
+  const playerRef = useRef(); // Create a ref for the player
+  const mazeWalls = createMaze(); // Generate maze walls
+
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement('ambientLight', { intensity: 0.5 }),
+    React.createElement('pointLight', { position: [10, 10, 10] }),
+    React.createElement(Player, { playerRef }), // Pass the playerRef to Player
+    React.createElement(CameraFollow, { playerRef }), // Pass the playerRef to CameraFollow
+    ...mazeWalls // Spread the maze walls into the scene
+  );
+}
 
   return GameScene;
 };
