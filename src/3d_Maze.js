@@ -1,6 +1,6 @@
 window.initMazeGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   // Simple Maze Layout (1 is wall, 0 is path)
@@ -15,25 +15,21 @@ window.initMazeGame = (React, assetsUrl) => {
   function Maze() {
     const mazeRef = useRef();
 
-    return (
-      <group ref={mazeRef}>
-        {mazeLayout.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            if (cell === 1) {
-              return (
-                <mesh
-                  key={`${rowIndex}-${colIndex}`}
-                  position={[colIndex * 2, 0.5, -rowIndex * 2]}
-                >
-                  <boxGeometry args={[1, 1, 1]} />
-                  <meshStandardMaterial color="gray" />
-                </mesh>
-              );
-            }
-            return null;
-          })
-        )}
-      </group>
+    return React.createElement('group', { ref: mazeRef }, 
+      mazeLayout.map((row, rowIndex) =>
+        row.map((cell, colIndex) => {
+          if (cell === 1) {
+            return React.createElement('mesh', {
+              key: `${rowIndex}-${colIndex}`,
+              position: [colIndex * 2, 0.5, -rowIndex * 2],
+            },
+              React.createElement('boxGeometry', { args: [1, 1, 1] }),
+              React.createElement('meshStandardMaterial', { color: 'gray' })
+            );
+          }
+          return null;
+        })
+      )
     );
   }
 
@@ -115,11 +111,9 @@ window.initMazeGame = (React, assetsUrl) => {
       });
     });
 
-    return (
-      <mesh ref={playerRef} position={[0, 1, 0]}>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="blue" />
-      </mesh>
+    return React.createElement('mesh', { ref: playerRef, position: [0, 1, 0] },
+      React.createElement('sphereGeometry', { args: [0.5, 32, 32] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
@@ -135,14 +129,12 @@ window.initMazeGame = (React, assetsUrl) => {
   }
 
   function MazeGame() {
-    return (
-      <React.Fragment>
-        <Camera />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <Maze />
-        <Player />
-      </React.Fragment>
+    return React.createElement(React.Fragment, null,
+      React.createElement(Camera),
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze),
+      React.createElement(Player)
     );
   }
 
