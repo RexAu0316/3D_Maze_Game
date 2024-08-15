@@ -51,20 +51,53 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function CameraControls() {
-    const { camera, gl } = useThree();
-    const controlsRef = useRef();
+    const { camera } = useThree();
+    const speed = 0.1; // Speed of camera movement
+    const rotationSpeed = 0.002; // Speed of camera rotation
+    const keys = { w: false, a: false, s: false, d: false };
+    const mouseMovement = useRef({ x: 0, y: 0 });
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    const handleMouseMove = (event) => {
+      mouseMovement.current.x = event.movementX;
+      mouseMovement.current.y = event.movementY;
+    };
 
     useEffect(() => {
-      const controls = new THREE.OrbitControls(camera, gl.domElement);
-      controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-      controls.dampingFactor = 0.25;
-      controls.screenSpacePanning = false; // prevent panning out of the scene
-      controls.maxPolarAngle = Math.PI / 2; // limit vertical rotation
-
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('mousemove', handleMouseMove);
       return () => {
-        controls.dispose(); // Clean up controls on component unmount
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        window.removeEventListener('mousemove', handleMouseMove);
       };
-    }, [camera, gl]);
+    }, []);
+
+    useFrame(() => {
+      // Rotate camera based on mouse movement
+      camera.rotation.y -= mouseMovement.current.x * rotationSpeed;
+      camera.rotation.x -= mouseMovement.current.y * rotationSpeed;
+      mouseMovement.current.x = 0; // Reset after processing
+      mouseMovement.current.y = 0; // Reset after processing
+
+      // Move camera based on key presses (optional)
+      if (keys.w) camera.position.z -= speed;
+      if (keys.s) camera.position.z += speed;
+      if (keys.a) camera.position.x -= speed;
+      if (keys.d) camera.position.x += speed;
+    });
 
     return null; // No visible component to render
   }
@@ -83,4 +116,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Updated player movement with camera controls script loaded');
+console.log('Updated player movement with custom camera controls script loaded');
