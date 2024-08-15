@@ -1,6 +1,6 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   const Wall = ({ position }) => {
@@ -83,8 +83,16 @@ window.initGame = (React, assetsUrl) => {
     const [mouseY, setMouseY] = useState(0);
     const sensitivity = 0.1;
 
-    const handleMouseDown = () => setIsMouseDown(true);
+    const handleMouseDown = (event) => {
+      if (event.button === 0) { // Left mouse button
+        setIsMouseDown(true);
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      }
+    };
+
     const handleMouseUp = () => setIsMouseDown(false);
+    
     const handleMouseMove = (event) => {
       if (isMouseDown) {
         const deltaX = event.clientX - mouseX;
@@ -102,8 +110,6 @@ window.initGame = (React, assetsUrl) => {
       window.addEventListener('mousedown', handleMouseDown);
       window.addEventListener('mouseup', handleMouseUp);
       window.addEventListener('mousemove', handleMouseMove);
-      setMouseX(window.innerWidth / 2);
-      setMouseY(window.innerHeight / 2);
 
       return () => {
         window.removeEventListener('mousedown', handleMouseDown);
