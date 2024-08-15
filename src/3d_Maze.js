@@ -83,13 +83,34 @@ window.initGame = (React, assetsUrl) => {
 
   function ThirdPersonCamera({ playerRef }) {
     const { camera } = useThree();
-    const offset = new THREE.Vector3(0, 5, -10); // Adjust the offset for third-person view
+    const offset = new THREE.Vector3(0, 5, -10);
+    const [mouseX, setMouseX] = useState(0);
+    const [mouseY, setMouseY] = useState(0);
+
+    useEffect(() => {
+      const handleMouseMove = (event) => {
+        setMouseX(event.clientX);
+        setMouseY(event.clientY);
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, []);
 
     useFrame(() => {
       if (playerRef.current) {
-        // Update camera position based on player position
-        camera.position.copy(playerRef.current.position).add(offset);
-        camera.lookAt(playerRef.current.position);
+        const playerPosition = playerRef.current.position;
+        camera.position.copy(playerPosition).add(offset);
+        camera.lookAt(playerPosition);
+
+        // Rotate the camera based on mouse movement
+        const rotationSpeed = 0.002; // Adjust rotation speed
+        const yaw = (mouseX / window.innerWidth - 0.5) * Math.PI; // X rotation
+        const pitch = (mouseY / window.innerHeight - 0.5) * Math.PI; // Y rotation
+
+        camera.rotation.set(pitch, yaw, 0); // Set camera rotation
       }
     });
 
@@ -119,6 +140,7 @@ window.initGame = (React, assetsUrl) => {
       [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1],
       [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
     ];
 
     const wallPositions = [];
