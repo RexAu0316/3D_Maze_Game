@@ -50,56 +50,24 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function CameraControls() {
+  function CameraFollow() {
     const { camera } = useThree();
-    const speed = 0.1; // Speed of camera movement
-    const rotationSpeed = 0.002; // Speed of camera rotation
-    const keys = { w: false, a: false, s: false, d: false };
-    const mouseMovement = useRef({ x: 0, y: 0 });
-
-    const handleKeyDown = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = true;
-      }
-    };
-
-    const handleKeyUp = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = false;
-      }
-    };
-
-    const handleMouseMove = (event) => {
-      mouseMovement.current.x = event.movementX;
-      mouseMovement.current.y = event.movementY;
-    };
-
-    useEffect(() => {
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-        window.removeEventListener('mousemove', handleMouseMove);
-      };
-    }, []);
+    const playerRef = useRef();
 
     useFrame(() => {
-      // Rotate camera based on mouse movement
-      camera.rotation.y -= mouseMovement.current.x * rotationSpeed;
-      camera.rotation.x -= mouseMovement.current.y * rotationSpeed;
-      mouseMovement.current.x = 0; // Reset after processing
-      mouseMovement.current.y = 0; // Reset after processing
-
-      // Move camera based on key presses (optional)
-      if (keys.w) camera.position.z -= speed;
-      if (keys.s) camera.position.z += speed;
-      if (keys.a) camera.position.x -= speed;
-      if (keys.d) camera.position.x += speed;
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
     });
 
-    return null; // No visible component to render
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
   }
 
   function GameScene() {
@@ -108,12 +76,11 @@ window.initGame = (React, assetsUrl) => {
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraControls),
-      React.createElement(Player)
+      React.createElement(CameraFollow)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with custom camera controls script loaded');
+console.log('Updated player movement with camera follow script loaded');
