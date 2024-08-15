@@ -54,10 +54,10 @@ window.initGame = (React, assetsUrl) => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
 
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+        if (keys.current['ArrowUp']) direction.z -= speed;
+        if (keys.current['ArrowDown']) direction.z += speed;
+        if (keys.current['ArrowLeft']) direction.x -= speed;
+        if (keys.current['ArrowRight']) direction.x += speed;
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
@@ -65,8 +65,8 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
-      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0.5, -8.5] },
+      React.createElement('boxGeometry', { args: [0.5, 1, 0.5 }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
