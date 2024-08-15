@@ -54,10 +54,10 @@ window.initGame = (React, assetsUrl) => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
 
-        if (keys.current['ArrowUp']) direction.z -= speed;
-        if (keys.current['ArrowDown']) direction.z += speed;
-        if (keys.current['ArrowLeft']) direction.x -= speed;
-        if (keys.current['ArrowRight']) direction.x += speed;
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
@@ -66,7 +66,7 @@ window.initGame = (React, assetsUrl) => {
     });
 
     return React.createElement('mesh', { ref: playerRef, position: [8.5, 0.5, -8.5] },
-      React.createElement('boxGeometry', { args: [0.5, 1, 0.5 }),
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
@@ -96,7 +96,7 @@ window.initGame = (React, assetsUrl) => {
   function Maze() {
     const wallHeight = 1;
     const mazeLayout = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
       [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
