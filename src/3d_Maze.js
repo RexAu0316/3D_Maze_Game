@@ -1,6 +1,7 @@
 const { useEffect, useRef } = React;
 const { Canvas, useFrame, useThree } = ReactThreeFiber;
 const THREE = window.THREE;
+const ReactDOM = window.ReactDOM; // Add this line to define ReactDOM
 
 // Camera component
 function Camera({ playerRef }) {
