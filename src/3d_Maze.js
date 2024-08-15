@@ -166,17 +166,14 @@ window.initGame = (React, assetsUrl) => {
       React.Fragment,
       null,
       React.createElement(Camera),
-      React.createElement(MouseControlledCamera),
+      React.createElement(MouseControlledCamera),  // Added MouseControlledCamera here
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze)
     );
   }
 
-  const App = () => {
-    return React.createElement(MazeGame);
-  };
-
-  ReactDOM.render(React.createElement(App), document.getElementById('root'));
-  console.log('3D Maze game script loaded');
+  return MazeGame;
 };
+
+console.log('3D Maze game script loaded');
