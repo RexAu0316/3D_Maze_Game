@@ -1,7 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+const { useEffect, useRef } = React;
+const { Canvas, useFrame, useThree } = ReactThreeFiber;
+const THREE = window.THREE;
 
 // Camera component
 function Camera({ playerRef }) {
@@ -10,7 +9,7 @@ function Camera({ playerRef }) {
 
   useEffect(() => {
     // Initialize OrbitControls
-    const controls = new OrbitControls(camera, gl.domElement);
+    const controls = new THREE.OrbitControls(camera, gl.domElement);
     controls.enableDamping = true; // Smooth movement
     controls.dampingFactor = 0.25;
     controls.enableZoom = true; // Allow zooming
@@ -86,7 +85,6 @@ function Player({ playerRef }) {
 
 // Function to create the maze
 function createMaze() {
-  // Maze layout - 1 represents a wall, 0 represents open space
   const mazeLayout = [
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 1, 0, 0, 0, 1],
@@ -104,7 +102,6 @@ function createMaze() {
   mazeLayout.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
       if (cell === 1) {
-        // Create a wall mesh at y = wallHeight / 2 to place it on the ground
         const wall = (
           <mesh
             position={[colIndex, wallHeight / 2, -rowIndex]}
@@ -137,4 +134,6 @@ function MazeRunnerGame() {
   );
 }
 
-export default MazeRunnerGame;
+// Render the game
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<MazeRunnerGame />);
