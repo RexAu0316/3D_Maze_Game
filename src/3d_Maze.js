@@ -189,7 +189,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  function MazeRunnerGame() {
+   function MazeRunnerGame() {
     const playerRef = useRef(); // Reference to the player
 
     return React.createElement(
@@ -202,7 +202,9 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  return MazeRunnerGame;
+  // Render the game
+  const rootElement = document.getElementById('game-root'); // Ensure you have a div with this ID in your HTML
+  ReactDOM.render(React.createElement(MazeRunnerGame), rootElement);
 };
 
 console.log('3D Maze Runner game script loaded');
