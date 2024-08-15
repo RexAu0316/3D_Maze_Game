@@ -51,42 +51,19 @@ window.initGame = (React, assetsUrl) => {
 
 function CameraFollow({ playerRef }) {
   const { camera } = useThree();
-  const [moving, setMoving] = useState(false);
+  const offset = new THREE.Vector3(0, 5, 10); // Offset from the player
+  const targetPosition = new THREE.Vector3();
 
   useFrame(() => {
     if (playerRef.current) {
-      if (moving) {
-        // Smoothly update the camera position to follow the player
-        camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
-        );
-        camera.lookAt(playerRef.current.position);
-      }
+      // Set the target position based on the player's position and the offset
+      targetPosition.copy(playerRef.current.position).add(offset);
+      
+      // Smoothly interpolate the camera position towards the target position
+      camera.position.lerp(targetPosition, 0.1); // Smoothness factor
+      camera.lookAt(playerRef.current.position);
     }
   });
-
-  // Additional useEffect to manage moving state
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (['w', 'a', 's', 'd'].includes(event.key)) {
-        setMoving(true);
-      }
-    };
-
-    const handleKeyUp = (event) => {
-      if (['w', 'a', 's', 'd'].includes(event.key)) {
-        setMoving(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
 
   return null; // Nothing to render
 }
