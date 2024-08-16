@@ -150,14 +150,20 @@ window.initGame = (React, assetsUrl) => {
 
 
   function GameScene() {
+    const { camera } = useThree();
+    useEffect(() => {
+        camera.position.set(0, 5, 10); // Adjust camera position to see the maze
+        camera.lookAt(0, 0, 0); // Ensure camera looks at the origin
+    }, [camera]);
+
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraFollow)
+      React.createElement('ambientLight', { intensity: 1 }), // Increase intensity
+      React.createElement('pointLight', { position: [10, 10, 10], intensity: 1 }),
+      React.createElement(Maze) // Make sure to render the Maze here
     );
-  }
+}
 
   return GameScene;
 };
