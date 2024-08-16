@@ -27,6 +27,13 @@ window.initGame = (React, assetsUrl) => {
     const speed = 0.1;
     const keys = useRef({});
 
+    // Attach the ref to the `onRef` prop
+    useEffect(() => {
+      if (onRef) {
+        onRef(playerRef);
+      }
+    }, [onRef]);
+    
     useEffect(() => {
       const handleKeyDown = (event) => {
         keys.current[event.key] = true;
@@ -83,14 +90,24 @@ window.initGame = (React, assetsUrl) => {
     });
   }
 
-  function Camera() {
-    const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
-  }
+function Camera({ playerRef }) {
+  const { camera } = useThree();
+  
+  useFrame(() => {
+    if (playerRef.current) {
+      // Set the camera position behind the player
+      camera.position.set(
+        playerRef.current.position.x, 
+        playerRef.current.position.y + 5, // Height above the player
+        playerRef.current.position.z + 5  // Distance behind the player
+      );
+      // Make the camera look at the player's position
+      camera.lookAt(playerRef.current.position);
+    }
+  });
+
+  return null;
+}
 
   function Maze() {
     const wallHeight = 1; // Height of the walls
@@ -144,6 +161,7 @@ window.initGame = (React, assetsUrl) => {
       });
     });
 
+    const playerRef = useRef();
     // Pass the wallBoxes to the Player component
     return React.createElement(
       React.Fragment,
@@ -155,6 +173,7 @@ window.initGame = (React, assetsUrl) => {
           scale: wall.scale
         })
       ),
+      React.createElement(Player, { wallBoxes, onRef: (ref) => playerRef.current = ref }), // Pass the ref to Player
       React.createElement(Player, { wallBoxes }), // Pass wallBoxes as props
       React.createElement(Coin, { position: [-8.5, 0.5, 10.5] }) // Add the coin at the specified position
     );
