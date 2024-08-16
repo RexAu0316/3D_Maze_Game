@@ -12,6 +12,15 @@ window.initGame = (React, assetsUrl) => {
       className: 'maze-wall' // Adding class for identification
     });
   };
+
+  const Coin = ({ position }) => {
+    return React.createElement('mesh', {
+      position: position,
+      geometry: new THREE.CircleGeometry(0.5, 32), // Circular geometry for the coin
+      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }), // Gold color for the coin
+      rotation: [0, 0, 0] // Rotate the coin to lie flat on the ground
+    });
+  };
   
   function Player() {
     const playerRef = useRef();
