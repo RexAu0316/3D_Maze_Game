@@ -44,7 +44,7 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 1, 0] }, // Raise the player to be above ground
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -91,7 +91,7 @@ window.initGame = (React, assetsUrl) => {
       maze.forEach((row, y) => {
         row.forEach((cell, x) => {
           if (cell === 1) {
-            const wall = React.createElement('mesh', { position: [x, 0, -y] },
+            const wall = React.createElement('mesh', { position: [x, 1, -y] }, // Raise walls for better visibility
               React.createElement('boxGeometry', { args: [1, 2, 1] }),
               React.createElement('meshStandardMaterial', { color: 'gray' })
             );
