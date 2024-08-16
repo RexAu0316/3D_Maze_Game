@@ -4,7 +4,7 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
 
   function Player({ playerRef, walls }) {
-    const speed = 0.0005; // Movement speed
+    const speed = 0.00005; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
