@@ -67,7 +67,7 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [-1, 0.5, -1] },
+    return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, 1] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -75,7 +75,7 @@ window.initGame = (React, assetsUrl) => {
 
   function CameraFollow({ playerRef }) {
     const { camera } = useThree();
-    const offset = new THREE.Vector3(0, 10, 10);
+    const offset = new THREE.Vector3(0, 30, 10);
     const targetPosition = new THREE.Vector3();
 
     useFrame(() => {
