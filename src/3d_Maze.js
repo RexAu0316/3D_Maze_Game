@@ -3,66 +3,77 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
- function Player({ wallBoxes }) {
-    const playerRef = useRef();
-    const speed = 0.05; // Decreased speed for easier control
-    const keys = useRef({});
+  function Player({ playerRef, walls }) {
+    const speed = 0.005; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            keys.current[event.key] = true;
-        };
-
-        const handleKeyUp = (event) => {
-            keys.current[event.key] = false;
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-        };
-    }, []);
-
-    const checkCollision = (nextPosition) => {
-        const playerBox = new THREE.Box3().setFromCenterAndSize(
-            new THREE.Vector3(...nextPosition),
-            new THREE.Vector3(0.5, 1, 0.5)
-        );
-
-        return wallBoxes.some(wallBox => playerBox.intersectsBox(wallBox));
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
     };
 
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
+const checkCollision = (nextPosition) => {
+  const playerBox = new THREE.Box3().setFromCenterAndSize(
+    nextPosition,
+    new THREE.Vector3(0.5, 1, 0.5)
+  );
+
+  for (let wall of walls) {
+    if (wall) { // Check if wall is defined
+      const wallBox = new THREE.Box3().setFromCenterAndSize(
+        wall,
+        new THREE.Vector3(1, 1, 1)
+      );
+      if (playerBox.intersectsBox(wallBox)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
     useFrame(() => {
-        if (playerRef.current) {
-            const direction = new THREE.Vector3();
-            if (keys.current['w'] || keys.current['ArrowUp']) direction.z -= speed;
-            if (keys.current['s'] || keys.current['ArrowDown']) direction.z += speed;
-            if (keys.current['a'] || keys.current['ArrowLeft']) direction.x -= speed;
-            if (keys.current['d'] || keys.current['ArrowRight']) direction.x += speed;
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
-            // Calculate the new position based on direction
-            const nextPosition = [
-                playerRef.current.position.x + direction.x,
-                playerRef.current.position.y,
-                playerRef.current.position.z + direction.z,
-            ];
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
 
-            // Check for collisions before updating the player's position
-            if (!checkCollision(nextPosition)) {
-                playerRef.current.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
-            }
+        // Calculate the next position
+        const nextPosition = playerRef.current.position.clone().add(direction);
+
+        // Check for collision before updating the position
+        if (!checkCollision(nextPosition)) {
+          playerRef.current.position.copy(nextPosition);
         }
+      }
     });
 
-    return React.createElement('mesh', {
-        ref: playerRef,
-        position: [1, 0.5, -1], // Centered position
-        geometry: new THREE.BoxGeometry(0.5, 1, 0.5),
-        material: new THREE.MeshStandardMaterial({ color: 'blue' })
-    });
-}
+    return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, -1] },
+      React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
+    );
+  }
 
   function CameraFollow({ playerRef }) {
     const { camera } = useThree();
