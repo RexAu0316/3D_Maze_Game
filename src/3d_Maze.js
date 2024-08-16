@@ -12,17 +12,19 @@ window.initGame = (React, assetsUrl) => {
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = true;
-      }
-    };
+  if (keys.hasOwnProperty(event.key)) {
+    keys[event.key] = true;
+    console.log(`${event.key} pressed`);
+  }
+};
 
-    const handleKeyUp = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = false;
-      }
-    };
-
+const handleKeyUp = (event) => {
+  if (keys.hasOwnProperty(event.key)) {
+    keys[event.key] = false;
+    console.log(`${event.key} released`);
+  }
+};
+    
     useEffect(() => {
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
@@ -32,10 +34,10 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-
+   useFrame(() => {
+  if (playerRef.current) {
+    console.log('Player position:', playerRef.current.position);
+    
         if (keys.w) direction.z -= speed;
         if (keys.s) direction.z += speed;
         if (keys.a) direction.x -= speed;
