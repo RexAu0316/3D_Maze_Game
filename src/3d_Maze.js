@@ -3,7 +3,7 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Player() {
+  function Player({ position }) {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
@@ -44,62 +44,74 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 1, 0] }, // Raise the player to be above ground
-      React.createElement('boxGeometry', { args: [1, 1, 1] }),
-      React.createElement('meshStandardMaterial', { color: 'blue' })
-    );
-  }
+     return React.createElement('mesh', { ref: playerRef, position: position },
+    React.createElement('boxGeometry', { args: [1, 1, 1] }),
+    React.createElement('meshStandardMaterial', { color: 'blue' })
+  );
+}
 
   function CameraFollow() {
-    const { camera } = useThree();
-    const playerRef = useRef();
+  const { camera } = useThree();
+  const playerRef = useRef();
+  const mazeRef = useRef();
 
-    useFrame(() => {
-      if (playerRef.current) {
-        // Smoothly update the camera position to follow the player
-        camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
-        );
-        camera.lookAt(playerRef.current.position);
-      }
-    });
+  useFrame(() => {
+    if (playerRef.current) {
+      camera.position.lerp(
+        new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+        0.1
+      );
+      camera.lookAt(playerRef.current.position);
+    }
+  });
 
-    return React.createElement('group', { ref: playerRef },
-      React.createElement(Player)
-    );
-  }
+  // Get the starting position from the Maze component
+  const startPosition = mazeRef.current ? mazeRef.current.startPosition : [0, 1, 0];
 
+  return React.createElement('group', { ref: playerRef },
+    React.createElement(Player, { position: startPosition })
+  );
+}
   // Maze Component
-  function Maze() {
-    const mazeRef = useRef();
+function Maze() {
+  const mazeRef = useRef();
+  const maze = [
+    [1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1],
+  ];
 
-    // Simple grid-based maze generation (for demonstration)
-    const maze = [
-      [1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 0, 1],
-      [1, 0, 1, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1],
-    ];
+  // Function to find a starting position for the player
+  const findStartPosition = () => {
+    for (let y = 0; y < maze.length; y++) {
+      for (let x = 0; x < maze[y].length; x++) {
+        if (maze[y][x] === 0) { // Found an open space
+          return [x, 1, -y]; // Player's position: x, y (height), z
+        }
+      }
+    }
+    return [0, 1, 0]; // Fallback position if no valid space is found
+  };
 
-    useEffect(() => {
-      maze.forEach((row, y) => {
-        row.forEach((cell, x) => {
-          if (cell === 1) {
-            const wall = React.createElement('mesh', { position: [x, 0.5, -y] }, // Set the wall height to 1
-              React.createElement('boxGeometry', { args: [1, 1, 1] }), // Height set to 1
-              React.createElement('meshStandardMaterial', { color: 'gray' })
-            );
-            mazeRef.current.add(wall);
-          }
-        });
+  useEffect(() => {
+    maze.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        if (cell === 1) {
+          const wall = React.createElement('mesh', { position: [x, 0.5, -y] },
+            React.createElement('boxGeometry', { args: [1, 1, 1] }),
+            React.createElement('meshStandardMaterial', { color: 'gray' })
+          );
+          mazeRef.current.add(wall);
+        }
       });
-    }, [maze]);
+    });
+  }, [maze]);
 
-    return React.createElement('group', { ref: mazeRef });
-  }
+  return React.createElement('group', { ref: mazeRef, startPosition: findStartPosition() });
+}
 
   function GameScene() {
     return React.createElement(
