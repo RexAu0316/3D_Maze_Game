@@ -48,7 +48,7 @@ window.initGame = (React, assetsUrl) => {
 
   function CameraFollow({ playerRef }) {
     const { camera } = useThree();
-    const offset = new THREE.Vector3(0, 5, 10); // Offset from the player
+    const offset = new THREE.Vector3(0, 10, 10); // Offset from the player
     const targetPosition = new THREE.Vector3();
 
     useFrame(() => {
