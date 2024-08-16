@@ -4,7 +4,7 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
 
   function Player({ playerRef, walls }) {
-    const speed = 0.1; // Movement speed
+    const speed = 0.005; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
@@ -48,27 +48,26 @@ const checkCollision = (nextPosition) => {
   return false;
 };
 
-    useFrame((state) => {
-  if (playerRef.current) {
-    const direction = new THREE.Vector3();
-    if (keys.w) direction.z -= speed;
-    if (keys.s) direction.z += speed;
-    if (keys.a) direction.x -= speed;
-    if (keys.d) direction.x += speed;
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
 
-    // Normalize direction to maintain consistent speed
-    direction.normalize();
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
 
-    // Calculate the next position
-    const deltaTime = state.clock.getDelta(); // Get time since last frame
-    const nextPosition = playerRef.current.position.clone().add(direction.multiplyScalar(speed * deltaTime));
+        // Calculate the next position
+        const nextPosition = playerRef.current.position.clone().add(direction);
 
-    // Check for collision before updating the position
-    if (!checkCollision(nextPosition)) {
-      playerRef.current.position.copy(nextPosition);
-    }
-  }
-});
+        // Check for collision before updating the position
+        if (!checkCollision(nextPosition)) {
+          playerRef.current.position.copy(nextPosition);
+        }
+      }
+    });
 
     return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, -1] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
