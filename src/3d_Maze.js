@@ -3,6 +3,18 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
+  // Define the maze layout
+  const mazeLayout = [
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 0, 1, 1],
+    [1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+  ];
+
+  // Player Component
   function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
@@ -32,7 +44,6 @@ window.initGame = (React, assetsUrl) => {
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-
         if (keys.w) direction.z -= speed;
         if (keys.s) direction.z += speed;
         if (keys.a) direction.x -= speed;
@@ -50,6 +61,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Camera Follow Component
   function CameraFollow() {
     const { camera } = useThree();
     const playerRef = useRef();
@@ -70,17 +82,45 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Maze Component
+  function Maze() {
+    const wallHeight = 1;
+    const wallWidth = 1;
+    const wallDepth = 1;
+
+    const walls = mazeLayout.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        if (cell === 1) {
+          return React.createElement(
+            'mesh',
+            {
+              key: `${rowIndex}-${colIndex}`,
+              position: [colIndex * wallWidth, wallHeight / 2, -rowIndex * wallDepth],
+            },
+            React.createElement('boxGeometry', { args: [wallWidth, wallHeight, wallDepth] }),
+            React.createElement('meshStandardMaterial', { color: 'gray' })
+          );
+        }
+        return null;
+      })
+    );
+
+    return React.createElement('group', null, ...walls);
+  }
+
+  // Game Scene Component
   function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraFollow)
+      React.createElement(CameraFollow),
+      React.createElement(Maze) // Add the Maze component here
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with camera follow and maze script loaded');
