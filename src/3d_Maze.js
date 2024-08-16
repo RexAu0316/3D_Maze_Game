@@ -44,7 +44,7 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0, -8.5] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -83,7 +83,7 @@ window.initGame = (React, assetsUrl) => {
       [1, 1, 1, 1, 1, 1, 1, 1],
     ];
 
-    const wallHeight = 3; // Height of the maze walls
+    const wallHeight = 1; // Height of the maze walls
     const wallWidth = 1; // Width of each wall
 
     const walls = mazeLayout.map((row, rowIndex) =>
