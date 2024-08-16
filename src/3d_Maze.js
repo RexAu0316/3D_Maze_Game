@@ -70,12 +70,51 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Maze component
+  function Maze() {
+    // Define a simple maze layout
+    const mazeLayout = [
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+    ];
+
+    const wallHeight = 3; // Height of the maze walls
+    const wallWidth = 1; // Width of each wall
+
+    return (
+      <group>
+        {mazeLayout.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            if (cell === 1) {
+              return (
+                React.createElement('mesh', {
+                  key: `${rowIndex}-${colIndex}`,
+                  position: [colIndex * wallWidth, wallHeight / 2, rowIndex * wallWidth]
+                },
+                  React.createElement('boxGeometry', { args: [wallWidth, wallHeight, wallWidth] }),
+                  React.createElement('meshStandardMaterial', { color: 'gray' })
+                )
+              );
+            }
+            return null;
+          })
+        )}
+      </group>
+    );
+  }
+
   function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze), // Adding the maze to the scene
       React.createElement(CameraFollow)
     );
   }
@@ -83,4 +122,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with camera follow script and maze loaded');
