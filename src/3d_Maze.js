@@ -1,99 +1,94 @@
-window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense } = React;
-  const { useFrame } = window.ReactThreeFiber;
+window.initGame = (React) => {
+  const { useState, useEffect, useRef, useMemo } = React;
+  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Player({ playerRef }) {
-    const speed = 0.1; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false };
+  const Maze = () => {
+    const mazeLayout = [
+      [1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1],
+      [1, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1],
+    ];
 
-    const handleKeyDown = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = true;
+    const walls = [];
+    for (let y = 0; y < mazeLayout.length; y++) {
+      for (let x = 0; x < mazeLayout[y].length; x++) {
+        if (mazeLayout[y][x] === 1) {
+          walls.push(
+            React.createElement('mesh', {
+              key: `${x}-${y}`,
+              position: [x, 0, y],
+            }, React.createElement('boxBufferGeometry', { args: [1, 2, 1] }), React.createElement('meshStandardMaterial', { color: 'brown' }))
+          );
+        }
       }
-    };
+    }
 
-    const handleKeyUp = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = false;
+    return React.createElement(React.Fragment, null, ...walls);
+  };
+
+  const Player = () => {
+    const playerRef = useRef();
+    const speed = 0.1;
+
+    const handleMovement = (event) => {
+      if (playerRef.current) {
+        switch(event.key) {
+          case 'ArrowUp':
+            playerRef.current.position.z -= speed;
+            break;
+          case 'ArrowDown':
+            playerRef.current.position.z += speed;
+            break;
+          case 'ArrowLeft':
+            playerRef.current.position.x -= speed;
+            break;
+          case 'ArrowRight':
+            playerRef.current.position.x += speed;
+            break;
+          default:
+            break;
+        }
       }
     };
 
     useEffect(() => {
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('keydown', handleMovement);
       return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
+        window.removeEventListener('keydown', handleMovement);
       };
     }, []);
 
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
-
-        // Normalize direction to maintain consistent speed
-        direction.normalize();
-        playerRef.current.position.add(direction);
-      }
-    });
-
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
-      React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
+    return React.createElement('mesh', { ref: playerRef, position: [0.5, 0.5, 0.5] }, 
+      React.createElement('boxBufferGeometry', { args: [0.5, 1, 0.5] }), 
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
-  }
+  };
 
-  function createMaze() {
-    const mazeLayout = [
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 0, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 1, 0, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-    ];
+  const Camera = () => {
+    const { camera } = useThree();
+    
+    useEffect(() => {
+      camera.position.set(0, 5, 10);
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
 
-    const walls = [];
-    const wallHeight = 1; // Height of the wall
-    const wallThickness = 1;
+    return null;
+  };
 
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) {
-          const wall = React.createElement('mesh', {
-            position: [colIndex, wallHeight / 2, -rowIndex],
-            key: `wall-${rowIndex}-${colIndex}`
-          },
-            React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
-            React.createElement('meshStandardMaterial', { color: 'gray' })
-          );
-          walls.push(wall);
-        }
-      });
-    });
-
-    return walls;
-  }
-
-  function MazeGame() {
-    const playerRef = useRef();
-
+  const MazeGame = () => {
     return React.createElement(
       React.Fragment,
       null,
+      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      createMaze(),
-      React.createElement(Player, { playerRef })
+      React.createElement(Maze),
+      React.createElement(Player)
     );
-  }
+  };
 
   return MazeGame;
 };
