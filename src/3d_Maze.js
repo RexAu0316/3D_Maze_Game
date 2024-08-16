@@ -1,4 +1,4 @@
-window.initGame = (React) => {
+window.initPlayerMovement = (React) => {
   const { useRef, useEffect } = React;
   const { useFrame } = window.ReactThreeFiber;
   const THREE = window.THREE;
@@ -6,7 +6,12 @@ window.initGame = (React) => {
   function Player() {
     const playerRef = useRef();
     const speed = 0.1; // Movement speed
-    const keys = { ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false };
+    const keys = {
+      ArrowUp: false,
+      ArrowLeft: false,
+      ArrowDown: false,
+      ArrowRight: false,
+    };
 
     // Handle key down events
     const handleKeyDown = (event) => {
