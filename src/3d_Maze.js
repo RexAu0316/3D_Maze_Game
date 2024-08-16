@@ -2,6 +2,7 @@ const App = () => {
   const canvasStyle = {
     width: "100vw",
     height: "100vh",
+    position: "relative",
   };
 
   const sceneStyle = {
@@ -88,14 +89,18 @@ const App = () => {
   }, []);
 
   // Render the scene
-  return React.createElement("div", { style: canvasStyle },
+  const scene = React.createElement("div", { style: canvasStyle },
     React.createElement("div", { style: sceneStyle },
-      React.createElement("div", { style: { position: "absolute", left: targetRef.current.position.x, top: targetRef.current.position.y, zIndex: targetRef.current.position.z } },
+      React.createElement("div", { style: { position: "absolute", left: targetRef.current.position.x + "px", top: targetRef.current.position.y + "px", zIndex: targetRef.current.position.z } },
         React.createElement("div", { style: { width: "50px", height: "50px", backgroundColor: "red", position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" } })
       ),
       React.createElement("div", { style: { position: "absolute", bottom: "0", width: "100%", height: "50px", backgroundColor: "green" } })
     )
   );
+
+  return scene;
 };
 
-ReactDOM.render(React.createElement(App), document.getElementById("root"));
+// Assuming you have a root element in your HTML with id 'root'
+const rootElement = document.getElementById("root");
+rootElement.appendChild(scene);
