@@ -33,10 +33,11 @@ window.initGame = (React, assetsUrl) => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
 
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+        // Create movement directions based on key states
+        if (keys.w) direction.z -= speed; // Move forward
+        if (keys.s) direction.z += speed; // Move backward
+        if (keys.a) direction.x -= speed; // Move left
+        if (keys.d) direction.x += speed; // Move right
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
