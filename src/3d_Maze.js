@@ -52,18 +52,40 @@ window.initPlayerMovement = (React) => {
     });
 
     // Render the player as a 3D box
-    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0.5, -8.5] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0.5, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  // Main component to return the Player
+  function Camera() {
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Set the camera position behind the player
+        const playerPosition = playerRef.current.position;
+        const cameraOffset = new THREE.Vector3(0, 2, -5); // Adjust as necessary
+        const cameraPosition = playerPosition.clone().add(cameraOffset);
+        
+        // Update the camera position and look at the player
+        window.camera.position.copy(cameraPosition);
+        window.camera.lookAt(playerPosition);
+      }
+    });
+
+    return null; // No visual representation needed for the camera
+  }
+
+  // Main component to return the Player and Camera
   function Game() {
-    return React.createElement(Player);
+    return React.createElement(React.Fragment, null,
+      React.createElement(Player),
+      React.createElement(Camera)
+    );
   }
 
   return Game;
 };
 
-console.log('Player movement script with arrow keys loaded');
+console.log('Player movement script with camera follow loaded');
