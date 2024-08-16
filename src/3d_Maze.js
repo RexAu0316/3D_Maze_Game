@@ -1,62 +1,108 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef } = React;
-  const { Canvas, useFrame } = window.ReactThreeFiber;
+  const { useState, useEffect, useRef, Suspense, useMemo } = React;
+  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
+  const { GLTFLoader } = window.THREE;
+
+  // Existing MoleModel, HammerModel, and other components...
+
+  const PlayerModel = React.memo(function PlayerModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
+    const gltf = useLoader(GLTFLoader, url);
+    const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
+    
+    useEffect(() => {
+      copiedScene.scale.set(...scale);
+      copiedScene.position.set(...position);
+    }, [copiedScene, scale, position]);
+
+    return React.createElement('primitive', { object: copiedScene });
+  });
 
   function Player() {
-    const playerRef = useRef();
-    const speed = 0.1;
+    return React.createElement(
+      'group',
+      { position: [0, 0, 0] }, // Positioning the player in the center
+      React.createElement(PlayerModel, { 
+        url: `${assetsUrl}/player.glb`, // Assume you have a player model
+        scale: [1, 1, 1],
+        position: [0, 0, 0]
+      })
+    );
+  }
 
-    // Handle keyboard controls
+  function WhackAMole3D() {
+    const [moles, setMoles] = useState(Array(9).fill(false));
+    const [score, setScore] = useState(0);
+
     useEffect(() => {
-      const handleKeyDown = (event) => {
-        switch (event.key) {
-          case 'w':
-            playerRef.current.position.z -= speed;
-            break;
-          case 's':
-            playerRef.current.position.z += speed;
-            break;
-          case 'a':
-            playerRef.current.position.x -= speed;
-            break;
-          case 'd':
-            playerRef.current.position.x += speed;
-            break;
-          default:
-            break;
-        }
+      const popUpMole = () => {
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          const inactiveIndices = newMoles.reduce((acc, mole, index) => !mole ? [...acc, index] : acc, []);
+          if (inactiveIndices.length > 0) {
+            const randomIndex = inactiveIndices[Math.floor(Math.random() * inactiveIndices.length)];
+            newMoles[randomIndex] = true;
+          }
+          return newMoles;
+        });
       };
 
-      window.addEventListener('keydown', handleKeyDown);
+      const popDownMole = () => {
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          const activeIndices = newMoles.reduce((acc, mole, index) => mole ? [...acc, index] : acc, []);
+          if (activeIndices.length > 0) {
+            const randomIndex = activeIndices[Math.floor(Math.random() * activeIndices.length)];
+            newMoles[randomIndex] = false;
+          }
+          return newMoles;
+        });
+      };
+
+      const popUpInterval = setInterval(popUpMole, 1000);
+      const popDownInterval = setInterval(popDownMole, 2000);
+
       return () => {
-        window.removeEventListener('keydown', handleKeyDown);
+        clearInterval(popUpInterval);
+        clearInterval(popDownInterval);
       };
     }, []);
 
-    return React.createElement(
-      'mesh',
-      { ref: playerRef, position: [0, 0, 0] },
-      React.createElement('boxGeometry', { args: [1, 1, 1] }),
-      React.createElement('meshStandardMaterial', { color: 'orange' })
-    );
-  }
+    const whackMole = (index) => {
+      if (moles[index]) {
+        setScore(prevScore => prevScore + 1);
+        setMoles(prevMoles => {
+          const newMoles = [...prevMoles];
+          newMoles[index] = false;
+          return newMoles;
+        });
+      }
+    };
 
-  function Scene() {
     return React.createElement(
       React.Fragment,
       null,
+      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Player)
+      moles.map((isActive, index) => 
+        React.createElement(Mole, {
+          key: index,
+          position: [
+            (index % 3 - 1) * 4,
+            0,
+            (Math.floor(index / 3) - 1) * 4
+          ],
+          isActive: isActive,
+          onWhack: () => whackMole(index)
+        })
+      ),
+      React.createElement(Hammer),
+      React.createElement(Player) // Add the Player component here
     );
   }
 
-  function Game() {
-    return React.createElement(Canvas, null, React.createElement(Scene));
-  }
-
-  return Game;
+  return WhackAMole3D;
 };
 
-console.log('3D Player Controller script loaded');
+console.log('3D Whack-a-Mole game script loaded');
