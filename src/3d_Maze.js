@@ -1,108 +1,101 @@
-window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+window.initMazeGame = (React, assetsUrl) => {
+  const { useState, useEffect, useRef, Suspense } = React;
+  const { useFrame } = window.ReactThreeFiber;
   const THREE = window.THREE;
-  const { GLTFLoader } = window.THREE;
 
-  // Existing MoleModel, HammerModel, and other components...
+  function Player({ playerRef }) {
+    const speed = 0.1; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
 
-  const PlayerModel = React.memo(function PlayerModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
-    const gltf = useLoader(GLTFLoader, url);
-    const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
-    
-    useEffect(() => {
-      copiedScene.scale.set(...scale);
-      copiedScene.position.set(...position);
-    }, [copiedScene, scale, position]);
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
 
-    return React.createElement('primitive', { object: copiedScene });
-  });
-
-  function Player() {
-    return React.createElement(
-      'group',
-      { position: [0, 0, 0] }, // Positioning the player in the center
-      React.createElement(PlayerModel, { 
-        url: `${assetsUrl}/player.glb`, // Assume you have a player model
-        scale: [1, 1, 1],
-        position: [0, 0, 0]
-      })
-    );
-  }
-
-  function WhackAMole3D() {
-    const [moles, setMoles] = useState(Array(9).fill(false));
-    const [score, setScore] = useState(0);
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
 
     useEffect(() => {
-      const popUpMole = () => {
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          const inactiveIndices = newMoles.reduce((acc, mole, index) => !mole ? [...acc, index] : acc, []);
-          if (inactiveIndices.length > 0) {
-            const randomIndex = inactiveIndices[Math.floor(Math.random() * inactiveIndices.length)];
-            newMoles[randomIndex] = true;
-          }
-          return newMoles;
-        });
-      };
-
-      const popDownMole = () => {
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          const activeIndices = newMoles.reduce((acc, mole, index) => mole ? [...acc, index] : acc, []);
-          if (activeIndices.length > 0) {
-            const randomIndex = activeIndices[Math.floor(Math.random() * activeIndices.length)];
-            newMoles[randomIndex] = false;
-          }
-          return newMoles;
-        });
-      };
-
-      const popUpInterval = setInterval(popUpMole, 1000);
-      const popDownInterval = setInterval(popDownMole, 2000);
-
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
       return () => {
-        clearInterval(popUpInterval);
-        clearInterval(popDownInterval);
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
       };
     }, []);
 
-    const whackMole = (index) => {
-      if (moles[index]) {
-        setScore(prevScore => prevScore + 1);
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          newMoles[index] = false;
-          return newMoles;
-        });
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
-    };
+    });
+
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
+    );
+  }
+
+  function createMaze() {
+    const mazeLayout = [
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1],
+    ];
+
+    const walls = [];
+    const wallHeight = 1; // Height of the wall
+    const wallThickness = 1;
+
+    mazeLayout.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === 1) {
+          const wall = React.createElement('mesh', {
+            position: [colIndex, wallHeight / 2, -rowIndex],
+            key: `wall-${rowIndex}-${colIndex}`
+          },
+            React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
+            React.createElement('meshStandardMaterial', { color: 'gray' })
+          );
+          walls.push(wall);
+        }
+      });
+    });
+
+    return walls;
+  }
+
+  function MazeGame() {
+    const playerRef = useRef();
 
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      moles.map((isActive, index) => 
-        React.createElement(Mole, {
-          key: index,
-          position: [
-            (index % 3 - 1) * 4,
-            0,
-            (Math.floor(index / 3) - 1) * 4
-          ],
-          isActive: isActive,
-          onWhack: () => whackMole(index)
-        })
-      ),
-      React.createElement(Hammer),
-      React.createElement(Player) // Add the Player component here
+      createMaze(),
+      React.createElement(Player, { playerRef })
     );
   }
 
-  return WhackAMole3D;
+  return MazeGame;
 };
 
-console.log('3D Whack-a-Mole game script loaded');
+console.log('3D Maze game script loaded');
