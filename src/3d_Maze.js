@@ -70,12 +70,47 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Maze Component
+  function Maze() {
+    const mazeRef = useRef();
+
+    // Simple grid-based maze generation (for demonstration)
+    const maze = [
+      [1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 1],
+      [1, 0, 1, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1],
+    ];
+
+    useEffect(() => {
+      const mazeWidth = maze[0].length;
+      const mazeHeight = maze.length;
+
+      maze.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          if (cell === 1) {
+            const wall = React.createElement('mesh', { position: [x, 0, -y] },
+              React.createElement('boxGeometry', { args: [1, 2, 1] }),
+              React.createElement('meshStandardMaterial', { color: 'gray' })
+            );
+            mazeRef.current.add(wall);
+          }
+        });
+      });
+    }, [maze]);
+
+    return React.createElement('group', { ref: mazeRef });
+  }
+
   function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze), // Add the Maze component here
       React.createElement(CameraFollow)
     );
   }
@@ -83,4 +118,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with camera follow and maze script loaded');
