@@ -66,7 +66,7 @@ window.initGame = (React) => {
         const cameraOffset = new THREE.Vector3(0, 2, -5); // Adjust this offset as needed
         const cameraPosition = playerPosition.clone().add(cameraOffset);
         
-        window.camera.position.copy(cameraPosition);
+        window.camera.position.copy(cameraPosition); // Assuming camera is defined globally
         window.camera.lookAt(playerPosition);
       }
     });
