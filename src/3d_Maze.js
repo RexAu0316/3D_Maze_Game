@@ -1,4 +1,4 @@
-window.initMazeGame = (React, assetsUrl) => {
+window.initGame = (React, assetsUrl) => {
   const { useState, useEffect, useRef, Suspense } = React;
   const { useFrame } = window.ReactThreeFiber;
   const THREE = window.THREE;
