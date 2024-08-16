@@ -69,16 +69,6 @@ function CameraFollow({ playerRef }) {
   ];
 
   const walls = [];
-
-    
-          
-            
-    
-
-          
-          Expand Down
-    
-    
   
   const wallHeight = 1;
   const wallThickness = 1;
