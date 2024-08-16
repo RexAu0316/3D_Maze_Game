@@ -4,7 +4,7 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
 
   function Player({ playerRef, walls }) {
-    const speed = 0.1; // Movement speed
+    const speed = 0.05; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
@@ -69,7 +69,7 @@ const checkCollision = (nextPosition) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, 1] },
+    return React.createElement('mesh', { ref: playerRef, position: [3, 0.5, 3] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
