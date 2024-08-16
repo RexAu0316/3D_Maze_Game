@@ -44,7 +44,7 @@ window.initGame = (React, assetsUrl) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0, -8.5] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -70,47 +70,12 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  // Maze component
-  function Maze() {
-    // Define a simple maze layout
-    const mazeLayout = [
-      [1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 0, 0, 0, 1],
-      [1, 1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 1, 0, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1],
-    ];
-
-    const wallHeight = 1; // Height of the maze walls
-    const wallWidth = 1; // Width of each wall
-
-    const walls = mazeLayout.map((row, rowIndex) =>
-      row.map((cell, colIndex) => {
-        if (cell === 1) {
-          return React.createElement('mesh', {
-            key: `${rowIndex}-${colIndex}`,
-            position: [colIndex * wallWidth, wallHeight / 2, rowIndex * wallWidth]
-          },
-            React.createElement('boxGeometry', { args: [wallWidth, wallHeight, wallWidth] }),
-            React.createElement('meshStandardMaterial', { color: 'gray' })
-          );
-        }
-        return null;
-      })
-    );
-
-    return React.createElement('group', null, ...walls.flat());
-  }
-
   function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze), // Adding the maze to the scene
       React.createElement(CameraFollow)
     );
   }
@@ -118,4 +83,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script and maze loaded');
+console.log('Updated player movement with camera follow script loaded');
