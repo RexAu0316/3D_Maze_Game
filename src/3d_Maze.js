@@ -3,6 +3,15 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
+    const MazeWall = ({ position, scale }) => {
+    return React.createElement('mesh', {
+      position: position,
+      scale: scale,
+      geometry: new THREE.BoxGeometry(1, 1, 1),
+      material: new THREE.MeshStandardMaterial({ color: 'gray' }),
+      className: 'maze-wall' // Adding class for identification
+    });
+  };
   
   function Player() {
     const playerRef = useRef();
