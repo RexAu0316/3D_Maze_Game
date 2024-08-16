@@ -40,7 +40,7 @@ window.initGame = (React, assetsUrl) => {
     });
 
     // Set player's initial position at y = 0.5 to match wall height
-    return React.createElement('mesh', { ref: playerRef, position: [2, 0.5, 2] },
+    return React.createElement('mesh', { ref: playerRef, position: [-1, 0.5, -1] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
