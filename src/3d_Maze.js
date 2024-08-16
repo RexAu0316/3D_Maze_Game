@@ -85,14 +85,11 @@ window.initGame = (React, assetsUrl) => {
     ];
 
     useEffect(() => {
-      const mazeWidth = maze[0].length;
-      const mazeHeight = maze.length;
-
       maze.forEach((row, y) => {
         row.forEach((cell, x) => {
           if (cell === 1) {
-            const wall = React.createElement('mesh', { position: [x, 1, -y] }, // Raise walls for better visibility
-              React.createElement('boxGeometry', { args: [1, 2, 1] }),
+            const wall = React.createElement('mesh', { position: [x, 0.5, -y] }, // Set the wall height to 1
+              React.createElement('boxGeometry', { args: [1, 1, 1] }), // Height set to 1
               React.createElement('meshStandardMaterial', { color: 'gray' })
             );
             mazeRef.current.add(wall);
