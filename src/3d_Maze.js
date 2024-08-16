@@ -3,7 +3,8 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Player({ wallBoxes }) {
+  
+  function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
@@ -40,60 +41,34 @@ window.initGame = (React, assetsUrl) => {
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
-
-        // Check for collisions with walls
-        const newPosition = playerRef.current.position.clone().add(direction);
-        const playerBox = new THREE.Box3().setFromCenterAndSize(
-          newPosition,
-          new THREE.Vector3(1, 1, 1) // Assuming the player size is 1x1x1
-        );
-
-        let collision = false;
-        for (const wallBox of wallBoxes) {
-          if (playerBox.intersectsBox(wallBox)) {
-            collision = true;
-            break;
-          }
-        }
-
-        if (!collision) {
-          playerRef.current.position.add(direction);
-        }
+        playerRef.current.position.add(direction);
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0, -8.5] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  function MazeWall({ position, scale }) {
-    return React.createElement('mesh', {
-      position: position,
-      scale: scale,
-      geometry: new THREE.BoxGeometry(1, 1, 1),
-      material: new THREE.MeshStandardMaterial({ color: 'gray' }),
-      className: 'maze-wall'
-    });
-  }
-
-  function Coin({ position }) {
-    return React.createElement('mesh', {
-      position: position,
-      geometry: new THREE.CircleGeometry(0.5, 32),
-      material: new THREE.MeshStandardMaterial({ color: 'gold', side: THREE.DoubleSide }),
-      rotation: [Math.PI / 2, 0, 0] // Rotate the coin to lie flat on the ground
-    });
-  }
-
-  function Camera() {
+  function CameraFollow() {
     const { camera } = useThree();
-    useEffect(() => {
-      camera.position.set(0, 20, 20); // Adjusted for maze size
-      camera.lookAt(playerRef);
-    }, [camera]);
-    return null;
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
+    });
+
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
   }
 
   function Maze() {
@@ -164,18 +139,18 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+
   function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Camera),
-      React.createElement(Maze) // Include the maze in the game scene
+      React.createElement(CameraFollow)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated game with maze and player collision detection loaded');
+console.log('Updated player movement with camera follow script loaded');
