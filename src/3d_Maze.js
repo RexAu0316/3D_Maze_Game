@@ -17,7 +17,7 @@ window.initGame = (React, assetsUrl) => {
   // Player Component
   function Player() {
     const playerRef = useRef();
-    const speed = 0.2; // Movement speed
+    const speed = 0.1; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
@@ -52,10 +52,20 @@ window.initGame = (React, assetsUrl) => {
         // Normalize direction to maintain consistent speed
         direction.normalize();
         playerRef.current.position.add(direction);
+
+        // Check for maze collision (simplified)
+        const { x, z } = playerRef.current.position;
+        const gridX = Math.floor(x);
+        const gridZ = -Math.floor(z); // Invert Z for correct grid reference
+        
+        // Prevent moving through walls
+        if (mazeLayout[gridZ] && mazeLayout[gridZ][gridX] === 1) {
+          playerRef.current.position.sub(direction); // Undo movement if wall
+        }
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0.5, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -68,7 +78,6 @@ window.initGame = (React, assetsUrl) => {
 
     useFrame(() => {
       if (playerRef.current) {
-        // Smoothly update the camera position to follow the player
         camera.position.lerp(
           new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
           0.1 // Smoothness factor
