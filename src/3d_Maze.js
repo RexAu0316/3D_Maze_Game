@@ -58,17 +58,14 @@ window.initGame = (React) => {
     );
   }
 
-  function Camera() {
-    const playerRef = useRef();
-
+  // Updated Camera component
+  function Camera({ playerRef }) {
     useFrame(() => {
       if (playerRef.current) {
-        // Set the camera position behind the player
         const playerPosition = playerRef.current.position;
-        const cameraOffset = new THREE.Vector3(0, 2, -5); // Adjust as necessary
+        const cameraOffset = new THREE.Vector3(0, 2, -5); // Adjust this offset as needed
         const cameraPosition = playerPosition.clone().add(cameraOffset);
         
-        // Update the camera position and look at the player
         window.camera.position.copy(cameraPosition);
         window.camera.lookAt(playerPosition);
       }
@@ -79,9 +76,11 @@ window.initGame = (React) => {
 
   // Main component to return the Player and Camera
   function Game() {
+    const playerRef = useRef();
+
     return React.createElement(React.Fragment, null,
-      React.createElement(Player),
-      React.createElement(Camera)
+      React.createElement(Player, { ref: playerRef }),
+      React.createElement(Camera, { playerRef }) // Pass playerRef to the Camera
     );
   }
 
