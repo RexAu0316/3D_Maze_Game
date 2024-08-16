@@ -28,23 +28,25 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        nextPosition,
-        new THREE.Vector3(0.5, 1, 0.5) // Size of the player
-      );
+const checkCollision = (nextPosition) => {
+  const playerBox = new THREE.Box3().setFromCenterAndSize(
+    nextPosition,
+    new THREE.Vector3(0.5, 1, 0.5)
+  );
 
-      for (let wall of walls) {
-        const wallBox = new THREE.Box3().setFromCenterAndSize(
-          wall.position,
-          new THREE.Vector3(1, 1, 1) // Size of the wall
-        );
-        if (playerBox.intersectsBox(wallBox)) {
-          return true; // Collision detected
-        }
+  for (let wall of walls) {
+    if (wall) { // Check if wall is defined
+      const wallBox = new THREE.Box3().setFromCenterAndSize(
+        wall,
+        new THREE.Vector3(1, 1, 1)
+      );
+      if (playerBox.intersectsBox(wallBox)) {
+        return true;
       }
-      return false; // No collision
-    };
+    }
+  }
+  return false;
+};
 
     useFrame(() => {
       if (playerRef.current) {
