@@ -6,10 +6,10 @@ window.initGame = (React, assetsUrl) => {
   let wallPositions = [];
   let wallBoxes = [];
 
- function Player() {
+function Player() {
   const playerRef = useRef();
   const speed = 0.2; // Movement speed
-  const keys = { w: false, a: false, s: false, d: false };
+  const keys = { ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false };
 
   const handleKeyDown = (event) => {
     if (keys.hasOwnProperty(event.key)) {
@@ -40,10 +40,11 @@ window.initGame = (React, assetsUrl) => {
 
       const direction = new THREE.Vector3(); // Initialize direction here
 
-      if (keys.w) direction.z -= speed;
-      if (keys.s) direction.z += speed;
-      if (keys.a) direction.x -= speed;
-      if (keys.d) direction.x += speed;
+      // Map arrow keys to movement directions
+      if (keys.ArrowUp) direction.z -= speed;      // Move forward
+      if (keys.ArrowDown) direction.z += speed;    // Move backward
+      if (keys.ArrowLeft) direction.x -= speed;    // Move left
+      if (keys.ArrowRight) direction.x += speed;   // Move right
 
       // Normalize direction to maintain consistent speed
       direction.normalize();
@@ -71,7 +72,7 @@ window.initGame = (React, assetsUrl) => {
     }
   });
 
-  return React.createElement('mesh', { ref: playerRef, position: [1, 0, 1] },
+  return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
     React.createElement('boxGeometry', { args: [1, 1, 1] }),
     React.createElement('meshStandardMaterial', { color: 'blue' })
   );
