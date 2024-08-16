@@ -86,26 +86,22 @@ window.initGame = (React, assetsUrl) => {
     const wallHeight = 3; // Height of the maze walls
     const wallWidth = 1; // Width of each wall
 
-    return (
-      <group>
-        {mazeLayout.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            if (cell === 1) {
-              return (
-                React.createElement('mesh', {
-                  key: `${rowIndex}-${colIndex}`,
-                  position: [colIndex * wallWidth, wallHeight / 2, rowIndex * wallWidth]
-                },
-                  React.createElement('boxGeometry', { args: [wallWidth, wallHeight, wallWidth] }),
-                  React.createElement('meshStandardMaterial', { color: 'gray' })
-                )
-              );
-            }
-            return null;
-          })
-        )}
-      </group>
+    const walls = mazeLayout.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        if (cell === 1) {
+          return React.createElement('mesh', {
+            key: `${rowIndex}-${colIndex}`,
+            position: [colIndex * wallWidth, wallHeight / 2, rowIndex * wallWidth]
+          },
+            React.createElement('boxGeometry', { args: [wallWidth, wallHeight, wallWidth] }),
+            React.createElement('meshStandardMaterial', { color: 'gray' })
+          );
+        }
+        return null;
+      })
     );
+
+    return React.createElement('group', null, ...walls.flat());
   }
 
   function GameScene() {
