@@ -1,67 +1,86 @@
-window.initSimple3DGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+window.initGame = (React, assetsUrl) => {
+  const { useRef, useEffect } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
-  const { GLTFLoader } = window.THREE;
 
-  const CubeModel = React.memo(function CubeModel({ position = [0, 0, 0], scale = [1, 1, 1] }) {
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
-    const mesh = useMemo(() => {
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.scale.set(...scale);
-      mesh.position.set(...position);
-      return mesh;
-    }, [scale, position]);
-    
-    return React.createElement('mesh', { ref: mesh });
-  });
+  function Player() {
+    const playerRef = useRef();
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
 
-  function MovingCube() {
-    const cubeRef = useRef();
-    const [position, setPosition] = useState([0, 0, 0]);
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
 
-    useFrame((state, delta) => {
-      if (cubeRef.current) {
-        const newY = Math.sin(state.clock.elapsedTime) * 2; // Simple vertical movement
-        setPosition([0, newY, 0]);
-        cubeRef.current.position.set(...position);
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
     });
 
-    return React.createElement(CubeModel, { position: position, scale: [1, 1, 1] });
-  }
-
-  function Camera() {
-    const { camera } = useThree();
-
-    useEffect(() => {
-      camera.position.set(0, 5, 10);
-      camera.lookAt(0, 0, 0);
-    }, [camera]);
-
-    return null;
-  }
-
-  function Simple3DGame() {
-    const [score, setScore] = useState(0);
-
-    const handleClick = () => {
-      setScore(prevScore => prevScore + 1);
-    };
-
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement(Camera),
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(MovingCube, { onClick: handleClick }),
-      React.createElement('text', { position: [0, 4, 0], fontSize: 1, color: 'white' }, `Score: ${score}`)
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  return Simple3DGame;
+  function CameraFollow() {
+    const { camera } = useThree();
+    const playerRef = useRef();
+
+    useFrame(() => {
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
+    });
+
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
+  }
+
+  function GameScene() {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(CameraFollow)
+    );
+  }
+
+  return GameScene;
 };
 
-console.log('Simple 3D game script loaded');
+console.log('Updated player movement with camera follow script loaded');
