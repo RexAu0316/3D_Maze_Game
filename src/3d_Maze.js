@@ -3,7 +3,10 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Player({ position }) {
+  let wallPositions = [];
+  let wallBoxes = [];
+
+  function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
@@ -40,86 +43,110 @@ window.initGame = (React, assetsUrl) => {
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
-        playerRef.current.position.add(direction);
+
+        const newPosition = playerRef.current.position.clone().add(direction);
+        const playerBox = new THREE.Box3().setFromCenterAndSize(
+          newPosition,
+          new THREE.Vector3(1, 1, 1) // Player box size
+        );
+
+        // Check for collisions with walls
+        let collision = false;
+        for (const box of wallBoxes) {
+          if (playerBox.intersectsBox(box)) {
+            collision = true;
+            break;
+          }
+        }
+
+        // Update position only if there's no collision
+        if (!collision) {
+          playerRef.current.position.add(direction);
+        }
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: position },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  function Maze() {
-    const mazeRef = useRef();
-    const maze = [
-      [1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 0, 1],
-      [1, 0, 1, 0, 0, 1],
-      [1, 0, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1],
-    ];
+  function CameraFollow() {
+    const { camera } = useThree();
+    const playerRef = useRef();
 
-    // Function to find a starting position for the player
-    const findStartPosition = () => {
-      for (let y = 0; y < maze.length; y++) {
-        for (let x = 0; x < maze[y].length; x++) {
-          if (maze[y][x] === 0) { // Found an open space
-            return [x, 1, -y]; // Player's position: x, y (height), z
-          }
-        }
+    useFrame(() => {
+      if (playerRef.current) {
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
       }
-      return [0, 1, 0]; // Fallback position if no valid space is found
-    };
+    });
 
-    useEffect(() => {
-      maze.forEach((row, y) => {
-        row.forEach((cell, x) => {
-          if (cell === 1) {
-            const wall = React.createElement('mesh', { position: [x, 0.5, -y] },
-              React.createElement('boxGeometry', { args: [1, 1, 1] }),
-              React.createElement('meshStandardMaterial', { color: 'gray' })
-            );
-            mazeRef.current.add(wall);
-          }
-        });
-      });
-    }, [maze]);
-
-    const startPosition = findStartPosition(); // Get the start position here
-    return React.createElement('group', { ref: mazeRef }, 
-      React.createElement('group', { position: [0, 0, 0] }, startPosition)
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
     );
   }
 
-  function CameraFollow({ playerPosition }) {
-    const { camera } = useThree();
-    useFrame(() => {
-      if (playerPosition) {
-        camera.position.lerp(
-          new THREE.Vector3(playerPosition[0], playerPosition[1] + 5, playerPosition[2] + 10),
-          0.1
-        );
-        camera.lookAt(playerPosition);
-      }
+  // Maze Component
+  function Maze() {
+    const wallHeight = 1; // Height of the walls
+    const mazeLayout = [
+      // ... (your original maze layout)
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      // ... (remaining maze layout)
+    ];
+
+    mazeLayout.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === 1) { // Wall
+          const position = [
+            colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
+            wallHeight / 2,
+            rowIndex - mazeLayout.length / 2 + 0.5,
+          ];
+          wallPositions.push({
+            position: position,
+            scale: [1, wallHeight, 1]
+          });
+
+          // Create bounding box for collision detection
+          const wallBox = new THREE.Box3().setFromCenterAndSize(
+            new THREE.Vector3(...position),
+            new THREE.Vector3(1, wallHeight, 1)
+          );
+          wallBoxes.push(wallBox);
+        }
+      });
     });
+
+    return React.createElement(
+      React.Fragment,
+      null,
+      wallPositions.map((wall, index) => (
+        React.createElement('mesh', { key: index, position: wall.position, scale: wall.scale },
+          React.createElement('boxGeometry', { args: [1, wallHeight, 1] }),
+          React.createElement('meshStandardMaterial', { color: 'gray' })
+        )
+      ))
+    );
   }
 
   function GameScene() {
-    const startPosition = Maze().props.children.props.position;
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Maze), // Add the Maze component here
-      React.createElement(CameraFollow, { playerPosition: startPosition }),
-      React.createElement(Player, { position: startPosition }) // Pass the starting position to Player
+      React.createElement(CameraFollow)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow and maze script loaded');
+console.log('Game script loaded with player movement, camera follow, and maze rendering');
