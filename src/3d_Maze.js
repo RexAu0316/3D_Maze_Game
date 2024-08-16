@@ -4,9 +4,8 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
 
   function Player({ playerRef, walls }) {
-    const speed = 0.1; // Reduced movement speed
+    const speed = 0.005; // Movement speed
     const keys = { w: false, a: false, s: false, d: false };
-    const mazeLayout = createMazeLayout(); // Refactor maze layout to be accessible
 
     const handleKeyDown = (event) => {
       if (keys.hasOwnProperty(event.key)) {
@@ -29,25 +28,25 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const checkCollision = (nextPosition) => {
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        nextPosition,
-        new THREE.Vector3(0.5, 1, 0.5)
-      );
+const checkCollision = (nextPosition) => {
+  const playerBox = new THREE.Box3().setFromCenterAndSize(
+    nextPosition,
+    new THREE.Vector3(0.5, 1, 0.5)
+  );
 
-      for (let wall of walls) {
-        if (wall) { // Check if wall is defined
-          const wallBox = new THREE.Box3().setFromCenterAndSize(
-            wall,
-            new THREE.Vector3(1, 1, 1)
-          );
-          if (playerBox.intersectsBox(wallBox)) {
-            return true;
-          }
-        }
+  for (let wall of walls) {
+    if (wall) { // Check if wall is defined
+      const wallBox = new THREE.Box3().setFromCenterAndSize(
+        wall,
+        new THREE.Vector3(1, 1, 1)
+      );
+      if (playerBox.intersectsBox(wallBox)) {
+        return true;
       }
-      return false;
-    };
+    }
+  }
+  return false;
+};
 
     useFrame(() => {
       if (playerRef.current) {
@@ -63,16 +62,9 @@ window.initGame = (React, assetsUrl) => {
         // Calculate the next position
         const nextPosition = playerRef.current.position.clone().add(direction);
 
-        // Snap to grid based on maze layout
-        const gridX = Math.round(nextPosition.x);
-        const gridZ = Math.round(-nextPosition.z); // Negate z for maze layout
-
-        // Check if the next position is valid in the maze
-        if (mazeLayout[gridZ] && mazeLayout[gridZ][gridX] === 0) {
-          // Check for collision before updating the position
-          if (!checkCollision(nextPosition)) {
-            playerRef.current.position.copy(nextPosition);
-          }
+        // Check for collision before updating the position
+        if (!checkCollision(nextPosition)) {
+          playerRef.current.position.copy(nextPosition);
         }
       }
     });
