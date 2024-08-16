@@ -1,86 +1,101 @@
-window.initGame = (React, assetsUrl) => {
-  const { useRef, useEffect } = React;
-  const { useFrame, useThree } = window.ReactThreeFiber;
-  const THREE = window.THREE;
+const App = () => {
+  const canvasStyle = {
+    width: "100vw",
+    height: "100vh",
+  };
 
-  function Player() {
-    const playerRef = useRef();
-    const speed = 0.2; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false };
+  const sceneStyle = {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "skyblue",
+  };
 
-    const handleKeyDown = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = true;
-      }
+  // State for keyboard controls
+  const [controls, setControls] = React.useState({
+    moveBackward: false,
+    moveForward: false,
+    moveLeft: false,
+    moveRight: false,
+  });
+
+  // Ref for the target object
+  const targetRef = React.useRef({ position: { x: 0, y: 2, z: 0 } });
+
+  // Keyboard event handlers
+  const handleKeyDown = (event) => {
+    switch (event.key) {
+      case "w":
+        setControls((prev) => ({ ...prev, moveForward: true }));
+        break;
+      case "s":
+        setControls((prev) => ({ ...prev, moveBackward: true }));
+        break;
+      case "a":
+        setControls((prev) => ({ ...prev, moveLeft: true }));
+        break;
+      case "d":
+        setControls((prev) => ({ ...prev, moveRight: true }));
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    switch (event.key) {
+      case "w":
+        setControls((prev) => ({ ...prev, moveForward: false }));
+        break;
+      case "s":
+        setControls((prev) => ({ ...prev, moveBackward: false }));
+        break;
+      case "a":
+        setControls((prev) => ({ ...prev, moveLeft: false }));
+        break;
+      case "d":
+        setControls((prev) => ({ ...prev, moveRight: false }));
+        break;
+      default:
+        break;
+    }
+  };
+
+  // UseEffect for adding/removing event listeners
+  React.useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
+  }, []);
 
-    const handleKeyUp = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = false;
-      }
-    };
+  // Frame update logic
+  const updateFrame = () => {
+    if (controls.moveRight) targetRef.current.position.x += 0.2;
+    if (controls.moveLeft) targetRef.current.position.x -= 0.2;
+    if (controls.moveForward) targetRef.current.position.z -= 0.2;
+    if (controls.moveBackward) targetRef.current.position.z += 0.2;
 
-    useEffect(() => {
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
-    }, []);
+    // Rendering logic would go here (not implemented)
+    requestAnimationFrame(updateFrame);
+  };
 
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
+  // Start the animation loop
+  React.useEffect(() => {
+    updateFrame();
+  }, []);
 
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
-
-        // Normalize direction to maintain consistent speed
-        direction.normalize();
-        playerRef.current.position.add(direction);
-      }
-    });
-
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
-      React.createElement('boxGeometry', { args: [1, 1, 1] }),
-      React.createElement('meshStandardMaterial', { color: 'blue' })
-    );
-  }
-
-  function CameraControls() {
-    const { camera, gl } = useThree();
-    const controlsRef = useRef();
-
-    useEffect(() => {
-      const controls = new THREE.OrbitControls(camera, gl.domElement);
-      controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-      controls.dampingFactor = 0.25;
-      controls.screenSpacePanning = false; // prevent panning out of the scene
-      controls.maxPolarAngle = Math.PI / 2; // limit vertical rotation
-
-      return () => {
-        controls.dispose(); // Clean up controls on component unmount
-      };
-    }, [camera, gl]);
-
-    return null; // No visible component to render
-  }
-
-  function GameScene() {
-    return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(CameraControls),
-      React.createElement(Player)
-    );
-  }
-
-  return GameScene;
+  // Render the scene
+  return React.createElement("div", { style: canvasStyle },
+    React.createElement("div", { style: sceneStyle },
+      React.createElement("div", { style: { position: "absolute", left: targetRef.current.position.x, top: targetRef.current.position.y, zIndex: targetRef.current.position.z } },
+        React.createElement("div", { style: { width: "50px", height: "50px", backgroundColor: "red", position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" } })
+      ),
+      React.createElement("div", { style: { position: "absolute", bottom: "0", width: "100%", height: "50px", backgroundColor: "green" } })
+    )
+  );
 };
 
-console.log('Updated player movement with camera controls script loaded');
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
