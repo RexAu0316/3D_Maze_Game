@@ -3,142 +3,103 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  let wallPositions = [];
-  let wallBoxes = [];
-
-function Player() {
-  const playerRef = useRef();
-  const speed = 0.2; // Movement speed
-  const keys = { ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false };
-
-  const handleKeyDown = (event) => {
-    if (keys.hasOwnProperty(event.key)) {
-      keys[event.key] = true;
-      console.log(`${event.key} pressed`);
-    }
-  };
-
-  const handleKeyUp = (event) => {
-    if (keys.hasOwnProperty(event.key)) {
-      keys[event.key] = false;
-      console.log(`${event.key} released`);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  useFrame(() => {
-    if (playerRef.current) {
-      console.log('Player position:', playerRef.current.position);
-
-      const direction = new THREE.Vector3(); // Initialize direction here
-
-      // Map arrow keys to movement directions
-      if (keys.ArrowUp) direction.z -= speed;      // Move forward
-      if (keys.ArrowDown) direction.z += speed;    // Move backward
-      if (keys.ArrowLeft) direction.x -= speed;    // Move left
-      if (keys.ArrowRight) direction.x += speed;   // Move right
-
-      // Normalize direction to maintain consistent speed
-      direction.normalize();
-
-      const newPosition = playerRef.current.position.clone().add(direction);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(
-        newPosition,
-        new THREE.Vector3(1, 1, 1) // Player box size
-      );
-
-      // Check for collisions with walls
-      let collision = false;
-      for (const box of wallBoxes) {
-        if (playerBox.intersectsBox(box)) {
-          collision = true;
-          console.log('Collision detected with wall');
-          break;
-        }
-      }
-
-      // Update position only if there's no collision
-      if (!collision) {
-        playerRef.current.position.add(direction);
-      }
-    }
-  });
-
-  return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
-    React.createElement('boxGeometry', { args: [1, 1, 1] }),
-    React.createElement('meshStandardMaterial', { color: 'blue' })
-  );
-}
-
-  function CameraFollow() {
-    const { camera } = useThree();
+  function Player() {
     const playerRef = useRef();
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
 
     useFrame(() => {
       if (playerRef.current) {
-        camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
-        );
-        camera.lookAt(playerRef.current.position);
+        const direction = new THREE.Vector3();
+
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
     });
 
-    return React.createElement('group', { ref: playerRef },
-      React.createElement(Player)
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  // Maze Component
-  function Maze() {
-    const wallHeight = 1; // Height of the walls
-    const mazeLayout = [
-      // ... (your original maze layout)
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      // ... (remaining maze layout)
-    ];
+  function CameraControls() {
+    const { camera } = useThree();
+    const speed = 0.1; // Speed of camera movement
+    const rotationSpeed = 0.002; // Speed of camera rotation
+    const keys = { w: false, a: false, s: false, d: false };
+    const mouseMovement = useRef({ x: 0, y: 0 });
 
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) { // Wall
-          const position = [
-            colIndex - mazeLayout[0].length / 2 + 0.5, // Center the maze
-            wallHeight / 2,
-            rowIndex - mazeLayout.length / 2 + 0.5,
-          ];
-          wallPositions.push({
-            position: position,
-            scale: [1, wallHeight, 1]
-          });
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
 
-          // Create bounding box for collision detection
-          const wallBox = new THREE.Box3().setFromCenterAndSize(
-            new THREE.Vector3(...position),
-            new THREE.Vector3(1, wallHeight, 1)
-          );
-          wallBoxes.push(wallBox);
-        }
-      });
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    const handleMouseMove = (event) => {
+      mouseMovement.current.x = event.movementX;
+      mouseMovement.current.y = event.movementY;
+    };
+
+    useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, []);
+
+    useFrame(() => {
+      // Rotate camera based on mouse movement
+      camera.rotation.y -= mouseMovement.current.x * rotationSpeed;
+      camera.rotation.x -= mouseMovement.current.y * rotationSpeed;
+      mouseMovement.current.x = 0; // Reset after processing
+      mouseMovement.current.y = 0; // Reset after processing
+
+      // Move camera based on key presses (optional)
+      if (keys.w) camera.position.z -= speed;
+      if (keys.s) camera.position.z += speed;
+      if (keys.a) camera.position.x -= speed;
+      if (keys.d) camera.position.x += speed;
     });
 
-    return React.createElement(
-      React.Fragment,
-      null,
-      wallPositions.map((wall, index) => (
-        React.createElement('mesh', { key: index, position: wall.position, scale: wall.scale },
-          React.createElement('boxGeometry', { args: [1, wallHeight, 1] }),
-          React.createElement('meshStandardMaterial', { color: 'gray' })
-        )
-      ))
-    );
+    return null; // No visible component to render
   }
 
   function GameScene() {
@@ -147,12 +108,12 @@ function Player() {
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze), // Add the Maze component here
-      React.createElement(CameraFollow)
+      React.createElement(CameraControls),
+      React.createElement(Player)
     );
   }
 
   return GameScene;
 };
 
-console.log('Game script loaded with player movement, camera follow, and maze rendering');
+console.log('Updated player movement with custom camera controls script loaded');
