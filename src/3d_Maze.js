@@ -3,10 +3,45 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
+  // Define a simple maze layout
+  const mazeLayout = [
+    [1, 0, 1, 1, 1, 0, 0, 1],
+    [1, 0, 0, 0, 1, 0, 1, 1],
+    [1, 1, 1, 0, 1, 0, 0, 0],
+    [0, 0, 1, 0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1]
+  ];
+
+  function Maze() {
+    const mazeRef = useRef();
+
+    // Create walls based on the maze layout
+    const wallSize = 1;
+    const wallHeight = 3;
+
+    return React.createElement('group', { ref: mazeRef }, 
+      mazeLayout.map((row, rowIndex) => 
+        row.map((cell, colIndex) => {
+          if (cell === 1) {
+            return React.createElement('mesh', {
+              key: `${rowIndex}-${colIndex}`,
+              position: [colIndex * wallSize, wallHeight / 2, rowIndex * wallSize]
+            },
+              React.createElement('boxGeometry', { args: [wallSize, wallHeight, wallSize] }),
+              React.createElement('meshStandardMaterial', { color: 'green' })
+            );
+          }
+          return null; // No mesh for open paths
+        })
+      )
+    );
+  }
+
   function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false };
+    const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
 
     const handleKeyDown = (event) => {
       if (keys.hasOwnProperty(event.key)) {
@@ -34,10 +69,10 @@ window.initGame = (React, assetsUrl) => {
         const direction = new THREE.Vector3();
 
         // Create movement directions based on key states
-        if (keys.w) direction.z -= speed; // Move forward
-        if (keys.s) direction.z += speed; // Move backward
-        if (keys.a) direction.x -= speed; // Move left
-        if (keys.d) direction.x += speed; // Move right
+        if (keys.w || keys.ArrowUp) direction.z -= speed; // Move forward
+        if (keys.s || keys.ArrowDown) direction.z += speed; // Move backward
+        if (keys.a || keys.ArrowLeft) direction.x -= speed; // Move left
+        if (keys.d || keys.ArrowRight) direction.x += speed; // Move right
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
@@ -77,6 +112,7 @@ window.initGame = (React, assetsUrl) => {
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(Maze),  // Add the Maze component here
       React.createElement(CameraFollow)
     );
   }
@@ -84,4 +120,4 @@ window.initGame = (React, assetsUrl) => {
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow script loaded');
+console.log('Updated player movement with camera follow and maze script loaded');
