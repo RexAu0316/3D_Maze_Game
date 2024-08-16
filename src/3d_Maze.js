@@ -49,19 +49,32 @@ window.initGame = (React, assetsUrl) => {
     }, []);
 
     useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
+  if (playerRef.current) {
+    const direction = new THREE.Vector3();
 
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+    if (keys.w) direction.z -= speed;
+    if (keys.s) direction.z += speed;
+    if (keys.a) direction.x -= speed;
+    if (keys.d) direction.x += speed;
 
-        // Normalize direction to maintain consistent speed
-        direction.normalize();
-        playerRef.current.position.add(direction);
+    direction.normalize();
+
+    const newPosition = playerRef.current.position.clone().add(direction);
+    const playerBox = new THREE.Box3().setFromObject(playerRef.current);
+
+    // Check for collisions with walls
+    let canMove = true;
+    wallBoxes.forEach(box => {
+      if (playerBox.intersectsBox(box)) {
+        canMove = false;
       }
     });
+
+    if (canMove) {
+      playerRef.current.position.add(direction);
+    }
+  }
+});
 
     return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
@@ -161,7 +174,7 @@ window.initGame = (React, assetsUrl) => {
   function GameScene() {
     const { camera } = useThree();
     useEffect(() => {
-        camera.position.set(0, 5, 10); // Adjust camera position to see the maze
+        camera.position.set(0, 10, 10); // Adjust camera position to see the maze
         camera.lookAt(0, 0, 0); // Ensure camera looks at the origin
     }, [camera]);
 
