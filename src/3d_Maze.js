@@ -1,46 +1,86 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense, useMemo } = React;
-  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const { useRef, useEffect } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  function Cube() {
-    const cubeRef = useRef();
+  function Player() {
+    const playerRef = useRef();
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
 
     useEffect(() => {
-      if (cubeRef.current) {
-        cubeRef.current.material.color.set('red'); // Set the color of the cube to red
-      }
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
     }, []);
 
-    return React.createElement('mesh', { ref: cubeRef },
-      React.createElement('boxBufferGeometry', { args: [1, 1, 1] }), // Create a cube
-      React.createElement('meshStandardMaterial', { color: 'red' }) // Material for the cube
+    useFrame(() => {
+      if (playerRef.current) {
+        const direction = new THREE.Vector3();
+
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
+      }
+    });
+
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
+      React.createElement('boxGeometry', { args: [1, 1, 1] }),
+      React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  function Camera() {
+  function CameraFollow() {
     const { camera } = useThree();
-    
-    useEffect(() => {
-      camera.position.set(0, 2, 5); // Adjust the camera position
-      camera.lookAt(0, 0, 0); // Look at the center of the scene
-    }, [camera]);
+    const playerRef = useRef();
 
-    return null;
+    useFrame(() => {
+      if (playerRef.current) {
+        // Smoothly update the camera position to follow the player
+        camera.position.lerp(
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
+          0.1 // Smoothness factor
+        );
+        camera.lookAt(playerRef.current.position);
+      }
+    });
+
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
   }
 
-  function SimpleScene() {
+  function GameScene() {
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(Camera),
-      React.createElement('ambientLight', { intensity: 0.5 }), // Ambient light
-      React.createElement('pointLight', { position: [10, 10, 10] }), // Point light
-      React.createElement(Cube) // Add the cube to the scene
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(CameraFollow)
     );
   }
 
-  return SimpleScene; // Return the simple scene
+  return GameScene;
 };
 
-console.log('3D Simple Scene with Cube script loaded');
+console.log('Updated player movement with camera follow script loaded');
