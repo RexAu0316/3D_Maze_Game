@@ -5,17 +5,17 @@ window.initGame = (React, assetsUrl) => {
 
   function Player({ playerRef, walls }) {
     const speed = 0.005; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false };
+    const keys = useRef({ w: false, a: false, s: false, d: false });
 
     const handleKeyDown = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = true;
+      if (keys.current.hasOwnProperty(event.key)) {
+        keys.current[event.key] = true;
       }
     };
 
     const handleKeyUp = (event) => {
-      if (keys.hasOwnProperty(event.key)) {
-        keys[event.key] = false;
+      if (keys.current.hasOwnProperty(event.key)) {
+        keys.current[event.key] = false;
       }
     };
 
@@ -28,33 +28,33 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-const checkCollision = (nextPosition) => {
-  const playerBox = new THREE.Box3().setFromCenterAndSize(
-    nextPosition,
-    new THREE.Vector3(0.5, 1, 0.5)
-  );
-
-  for (let wall of walls) {
-    if (wall) { // Check if wall is defined
-      const wallBox = new THREE.Box3().setFromCenterAndSize(
-        wall,
-        new THREE.Vector3(1, 1, 1)
+    const checkCollision = (nextPosition) => {
+      const playerBox = new THREE.Box3().setFromCenterAndSize(
+        nextPosition,
+        new THREE.Vector3(0.5, 1, 0.5)
       );
-      if (playerBox.intersectsBox(wallBox)) {
-        return true;
+
+      for (let wall of walls) {
+        if (wall) { // Check if wall is defined
+          const wallBox = new THREE.Box3().setFromCenterAndSize(
+            wall,
+            new THREE.Vector3(1, 1, 1)
+          );
+          if (playerBox.intersectsBox(wallBox)) {
+            return true;
+          }
+        }
       }
-    }
-  }
-  return false;
-};
+      return false;
+    };
 
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+        if (keys.current.w) direction.z -= speed;
+        if (keys.current.s) direction.z += speed;
+        if (keys.current.a) direction.x -= speed;
+        if (keys.current.d) direction.x += speed;
 
         // Normalize direction to maintain consistent speed
         direction.normalize();
@@ -94,7 +94,7 @@ const checkCollision = (nextPosition) => {
   function createMaze() {
     // Maze layout - 1 represents a wall, 0 represents open space
     const mazeLayout = [
-     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
       [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
       [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
