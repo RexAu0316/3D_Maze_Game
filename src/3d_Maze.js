@@ -1,106 +1,67 @@
-const App = () => {
-  const canvasStyle = {
-    width: "100vw",
-    height: "100vh",
-    position: "relative",
-  };
+window.initSimple3DGame = (React, assetsUrl) => {
+  const { useState, useEffect, useRef, useMemo } = React;
+  const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
+  const THREE = window.THREE;
+  const { GLTFLoader } = window.THREE;
 
-  const sceneStyle = {
-    position: "relative",
-    width: "100%",
-    height: "100%",
-    backgroundColor: "skyblue",
-  };
-
-  // State for keyboard controls
-  const [controls, setControls] = React.useState({
-    moveBackward: false,
-    moveForward: false,
-    moveLeft: false,
-    moveRight: false,
+  const CubeModel = React.memo(function CubeModel({ position = [0, 0, 0], scale = [1, 1, 1] }) {
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial({ color: 0x0077ff });
+    const mesh = useMemo(() => {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.scale.set(...scale);
+      mesh.position.set(...position);
+      return mesh;
+    }, [scale, position]);
+    
+    return React.createElement('mesh', { ref: mesh });
   });
 
-  // Ref for the target object
-  const targetRef = React.useRef({ position: { x: 0, y: 2, z: 0 } });
+  function MovingCube() {
+    const cubeRef = useRef();
+    const [position, setPosition] = useState([0, 0, 0]);
 
-  // Keyboard event handlers
-  const handleKeyDown = (event) => {
-    switch (event.key) {
-      case "w":
-        setControls((prev) => ({ ...prev, moveForward: true }));
-        break;
-      case "s":
-        setControls((prev) => ({ ...prev, moveBackward: true }));
-        break;
-      case "a":
-        setControls((prev) => ({ ...prev, moveLeft: true }));
-        break;
-      case "d":
-        setControls((prev) => ({ ...prev, moveRight: true }));
-        break;
-      default:
-        break;
-    }
-  };
+    useFrame((state, delta) => {
+      if (cubeRef.current) {
+        const newY = Math.sin(state.clock.elapsedTime) * 2; // Simple vertical movement
+        setPosition([0, newY, 0]);
+        cubeRef.current.position.set(...position);
+      }
+    });
 
-  const handleKeyUp = (event) => {
-    switch (event.key) {
-      case "w":
-        setControls((prev) => ({ ...prev, moveForward: false }));
-        break;
-      case "s":
-        setControls((prev) => ({ ...prev, moveBackward: false }));
-        break;
-      case "a":
-        setControls((prev) => ({ ...prev, moveLeft: false }));
-        break;
-      case "d":
-        setControls((prev) => ({ ...prev, moveRight: false }));
-        break;
-      default:
-        break;
-    }
-  };
+    return React.createElement(CubeModel, { position: position, scale: [1, 1, 1] });
+  }
 
-  // UseEffect for adding/removing event listeners
-  React.useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+  function Camera() {
+    const { camera } = useThree();
+
+    useEffect(() => {
+      camera.position.set(0, 5, 10);
+      camera.lookAt(0, 0, 0);
+    }, [camera]);
+
+    return null;
+  }
+
+  function Simple3DGame() {
+    const [score, setScore] = useState(0);
+
+    const handleClick = () => {
+      setScore(prevScore => prevScore + 1);
     };
-  }, []);
 
-  // Frame update logic
-  const updateFrame = () => {
-    if (controls.moveRight) targetRef.current.position.x += 0.2;
-    if (controls.moveLeft) targetRef.current.position.x -= 0.2;
-    if (controls.moveForward) targetRef.current.position.z -= 0.2;
-    if (controls.moveBackward) targetRef.current.position.z += 0.2;
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Camera),
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(MovingCube, { onClick: handleClick }),
+      React.createElement('text', { position: [0, 4, 0], fontSize: 1, color: 'white' }, `Score: ${score}`)
+    );
+  }
 
-    // Rendering logic would go here (not implemented)
-    requestAnimationFrame(updateFrame);
-  };
-
-  // Start the animation loop
-  React.useEffect(() => {
-    updateFrame();
-  }, []);
-
-  // Render the scene
-  const scene = React.createElement("div", { style: canvasStyle },
-    React.createElement("div", { style: sceneStyle },
-      React.createElement("div", { style: { position: "absolute", left: targetRef.current.position.x + "px", top: targetRef.current.position.y + "px", zIndex: targetRef.current.position.z } },
-        React.createElement("div", { style: { width: "50px", height: "50px", backgroundColor: "red", position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" } })
-      ),
-      React.createElement("div", { style: { position: "absolute", bottom: "0", width: "100%", height: "50px", backgroundColor: "green" } })
-    )
-  );
-
-  return scene;
+  return Simple3DGame;
 };
 
-// Assuming you have a root element in your HTML with id 'root'
-const rootElement = document.getElementById("root");
-rootElement.appendChild(scene);
+console.log('Simple 3D game script loaded');
