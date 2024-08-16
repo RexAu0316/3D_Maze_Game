@@ -3,21 +3,21 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
-  // Define the maze layout
+  // Define a new maze layout
   const mazeLayout = [
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 1, 0, 0, 1, 1],
-    [1, 0, 1, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 1, 0, 1],
-    [1, 1, 1, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 0, 1, 0, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
   ];
 
   // Player Component
   function Player() {
     const playerRef = useRef();
-    const speed = 0.1; // Movement speed
+    const speed = 0.1;
     const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
@@ -49,23 +49,21 @@ window.initGame = (React, assetsUrl) => {
         if (keys.a) direction.x -= speed;
         if (keys.d) direction.x += speed;
 
-        // Normalize direction to maintain consistent speed
         direction.normalize();
         playerRef.current.position.add(direction);
 
-        // Check for maze collision (simplified)
         const { x, z } = playerRef.current.position;
         const gridX = Math.floor(x);
-        const gridZ = -Math.floor(z); // Invert Z for correct grid reference
+        const gridZ = -Math.floor(z); 
         
         // Prevent moving through walls
         if (mazeLayout[gridZ] && mazeLayout[gridZ][gridX] === 1) {
-          playerRef.current.position.sub(direction); // Undo movement if wall
+          playerRef.current.position.sub(direction);
         }
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [8.5, 0.5, -8.5] },
+    return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, -1] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
@@ -79,8 +77,8 @@ window.initGame = (React, assetsUrl) => {
     useFrame(() => {
       if (playerRef.current) {
         camera.position.lerp(
-          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 5, playerRef.current.position.z + 10),
-          0.1 // Smoothness factor
+          new THREE.Vector3(playerRef.current.position.x, playerRef.current.position.y + 2, playerRef.current.position.z + 5),
+          0.1
         );
         camera.lookAt(playerRef.current.position);
       }
@@ -125,11 +123,11 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(CameraFollow),
-      React.createElement(Maze) // Add the Maze component here
+      React.createElement(Maze)
     );
   }
 
   return GameScene;
 };
 
-console.log('Updated player movement with camera follow and maze script loaded');
+console.log('New maze game script loaded');
