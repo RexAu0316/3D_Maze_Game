@@ -6,7 +6,7 @@ window.initPlayerMovement = (React) => {
   function Player() {
     const playerRef = useRef();
     const speed = 0.1; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false };
+    const keys = { ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false };
 
     // Handle key down events
     const handleKeyDown = (event) => {
@@ -35,10 +35,10 @@ window.initPlayerMovement = (React) => {
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+        if (keys.ArrowUp) direction.z -= speed;      // Move forward
+        if (keys.ArrowDown) direction.z += speed;    // Move backward
+        if (keys.ArrowLeft) direction.x -= speed;    // Move left
+        if (keys.ArrowRight) direction.x += speed;   // Move right
 
         // Normalize direction to maintain consistent speed if moving diagonally
         direction.normalize();
@@ -61,4 +61,4 @@ window.initPlayerMovement = (React) => {
   return Game;
 };
 
-console.log('Player movement script loaded');
+console.log('Player movement script with arrow keys loaded');
