@@ -1,26 +1,19 @@
-window.initGame = (React) => {
+window.initGame = (React, assetsUrl) => {
   const { useRef, useEffect } = React;
-  const { useFrame } = window.ReactThreeFiber;
+  const { useFrame, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
 
   function Player() {
     const playerRef = useRef();
-    const speed = 0.1; // Movement speed
-    const keys = {
-      ArrowUp: false,
-      ArrowLeft: false,
-      ArrowDown: false,
-      ArrowRight: false,
-    };
+    const speed = 0.2; // Movement speed
+    const keys = { w: false, a: false, s: false, d: false };
 
-    // Handle key down events
     const handleKeyDown = (event) => {
       if (keys.hasOwnProperty(event.key)) {
         keys[event.key] = true;
       }
     };
 
-    // Handle key up events
     const handleKeyUp = (event) => {
       if (keys.hasOwnProperty(event.key)) {
         keys[event.key] = false;
@@ -36,55 +29,58 @@ window.initGame = (React) => {
       };
     }, []);
 
-    // Update player position based on key input
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        if (keys.ArrowUp) direction.z -= speed;      // Move forward
-        if (keys.ArrowDown) direction.z += speed;    // Move backward
-        if (keys.ArrowLeft) direction.x -= speed;    // Move left
-        if (keys.ArrowRight) direction.x += speed;   // Move right
 
-        // Normalize direction to maintain consistent speed if moving diagonally
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
         direction.normalize();
         playerRef.current.position.add(direction);
       }
     });
 
-    // Render the player as a 3D box
-    return React.createElement('mesh', { ref: playerRef, position: [0, 0.5, 0] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0, 0] },
       React.createElement('boxGeometry', { args: [1, 1, 1] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
   }
 
-  // Updated Camera component
-  function Camera({ playerRef }) {
-    useFrame(() => {
-      if (playerRef.current) {
-        const playerPosition = playerRef.current.position;
-        const cameraOffset = new THREE.Vector3(0, 2, -5); // Adjust this offset as needed
-        const cameraPosition = playerPosition.clone().add(cameraOffset);
-        
-        window.camera.position.copy(cameraPosition); // Assuming camera is defined globally
-        window.camera.lookAt(playerPosition);
-      }
-    });
+  function CameraControls() {
+    const { camera, gl } = useThree();
+    const controlsRef = useRef();
 
-    return null; // No visual representation needed for the camera
+    useEffect(() => {
+      const controls = new THREE.OrbitControls(camera, gl.domElement);
+      controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+      controls.dampingFactor = 0.25;
+      controls.screenSpacePanning = false; // prevent panning out of the scene
+      controls.maxPolarAngle = Math.PI / 2; // limit vertical rotation
+
+      return () => {
+        controls.dispose(); // Clean up controls on component unmount
+      };
+    }, [camera, gl]);
+
+    return null; // No visible component to render
   }
 
-  // Main component to return the Player and Camera
-  function Game() {
-    const playerRef = useRef();
-
-    return React.createElement(React.Fragment, null,
-      React.createElement(Player, { ref: playerRef }),
-      React.createElement(Camera, { playerRef }) // Pass playerRef to the Camera
+  function GameScene() {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement('ambientLight', { intensity: 0.5 }),
+      React.createElement('pointLight', { position: [10, 10, 10] }),
+      React.createElement(CameraControls),
+      React.createElement(Player)
     );
   }
 
-  return Game;
+  return GameScene;
 };
 
-console.log('Player movement script with camera follow loaded');
+console.log('Updated player movement with camera controls script loaded');
