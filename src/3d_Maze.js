@@ -1,4 +1,4 @@
-window.initPlayerMovement = (React) => {
+window.initGame = (React) => {
   const { useRef, useEffect } = React;
   const { useFrame } = window.ReactThreeFiber;
   const THREE = window.THREE;
