@@ -1,19 +1,22 @@
-function Player() {
+window.initGame = (React, assetsUrl) => {
+  const { useRef, useEffect } = React;
+  const { useFrame, useThree } = window.ReactThreeFiber;
+  const THREE = window.THREE;
+
+  function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
-    const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+    const keys = { w: false, a: false, s: false, d: false };
 
     const handleKeyDown = (event) => {
       if (keys.hasOwnProperty(event.key)) {
         keys[event.key] = true;
-        console.log(`Key pressed: ${event.key}`); // Log key press
       }
     };
 
     const handleKeyUp = (event) => {
       if (keys.hasOwnProperty(event.key)) {
         keys[event.key] = false;
-        console.log(`Key released: ${event.key}`); // Log key release
       }
     };
 
@@ -29,18 +32,15 @@ function Player() {
     useFrame(() => {
       if (playerRef.current) {
         const direction = new THREE.Vector3();
-        
-        // Create movement directions based on key states
-        if (keys.w || keys.ArrowUp) direction.z -= speed; // Move forward
-        if (keys.s || keys.ArrowDown) direction.z += speed; // Move backward
-        if (keys.a || keys.ArrowLeft) direction.x -= speed; // Move left
-        if (keys.d || keys.ArrowRight) direction.x += speed; // Move right
 
-        // Only normalize if there is movement
-        if (direction.length() > 0) {
-          direction.normalize(); // Normalize direction to maintain consistent speed
-          playerRef.current.position.add(direction);
-        }
+        if (keys.w) direction.z -= speed;
+        if (keys.s) direction.z += speed;
+        if (keys.a) direction.x -= speed;
+        if (keys.d) direction.x += speed;
+
+        // Normalize direction to maintain consistent speed
+        direction.normalize();
+        playerRef.current.position.add(direction);
       }
     });
 
@@ -50,8 +50,9 @@ function Player() {
     );
   }
 
-  function CameraFollow({ playerRef }) {
+  function CameraFollow() {
     const { camera } = useThree();
+    const playerRef = useRef();
 
     useFrame(() => {
       if (playerRef.current) {
@@ -64,19 +65,22 @@ function Player() {
       }
     });
 
-    return null; // No need to render anything in CameraFollow
+    return React.createElement('group', { ref: playerRef },
+      React.createElement(Player)
+    );
   }
 
   function GameScene() {
-    const playerRef = useRef(); // Create a reference for the player
-
     return React.createElement(
       React.Fragment,
       null,
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Maze),  // Add the Maze component here
-      React.createElement(CameraFollow, { playerRef }), // Pass the playerRef to CameraFollow
-      React.createElement(Player, { ref: playerRef }) // Pass the ref to Player
+      React.createElement(CameraFollow)
     );
   }
+
+  return GameScene;
+};
+
+console.log('Updated player movement with camera follow script loaded');
