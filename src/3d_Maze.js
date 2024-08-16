@@ -1,44 +1,4 @@
-window.initGame = (React, assetsUrl) => {
-  const { useRef, useEffect } = React;
-  const { useFrame, useThree } = window.ReactThreeFiber;
-  const THREE = window.THREE;
-
-  // Define a simple maze layout
-  const mazeLayout = [
-    [1, 0, 1, 1, 1, 0, 0, 1],
-    [1, 0, 0, 0, 1, 0, 1, 1],
-    [1, 1, 1, 0, 1, 0, 0, 0],
-    [0, 0, 1, 0, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1]
-  ];
-
-  function Maze() {
-    const mazeRef = useRef();
-
-    // Create walls based on the maze layout
-    const wallSize = 1;
-    const wallHeight = 3;
-
-    return React.createElement('group', { ref: mazeRef }, 
-      mazeLayout.map((row, rowIndex) => 
-        row.map((cell, colIndex) => {
-          if (cell === 1) {
-            return React.createElement('mesh', {
-              key: `${rowIndex}-${colIndex}`,
-              position: [colIndex * wallSize, wallHeight / 2, rowIndex * wallSize]
-            },
-              React.createElement('boxGeometry', { args: [wallSize, wallHeight, wallSize] }),
-              React.createElement('meshStandardMaterial', { color: 'green' })
-            );
-          }
-          return null; // No mesh for open paths
-        })
-      )
-    );
-  }
-
- function Player() {
+function Player() {
     const playerRef = useRef();
     const speed = 0.2; // Movement speed
     const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
@@ -90,7 +50,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
- function CameraFollow({ playerRef }) {
+  function CameraFollow({ playerRef }) {
     const { camera } = useThree();
 
     useFrame(() => {
@@ -107,7 +67,7 @@ window.initGame = (React, assetsUrl) => {
     return null; // No need to render anything in CameraFollow
   }
 
- function GameScene() {
+  function GameScene() {
     const playerRef = useRef(); // Create a reference for the player
 
     return React.createElement(
@@ -120,7 +80,3 @@ window.initGame = (React, assetsUrl) => {
       React.createElement(Player, { ref: playerRef }) // Pass the ref to Player
     );
   }
-  return GameScene;
-};
-
-console.log('Updated player movement with camera follow and maze script loaded');
