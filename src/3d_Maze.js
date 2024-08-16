@@ -48,26 +48,29 @@ const checkCollision = (nextPosition) => {
   return false;
 };
 
-    useFrame(() => {
-      if (playerRef.current) {
-        const direction = new THREE.Vector3();
-        if (keys.w) direction.z -= speed;
-        if (keys.s) direction.z += speed;
-        if (keys.a) direction.x -= speed;
-        if (keys.d) direction.x += speed;
+    useFrame(({ clock }) => {
+  if (playerRef.current) {
+    const delta = clock.getDelta(); // Get the time since the last frame
+    const direction = new THREE.Vector3();
+    const speed = 5; // Set a reasonable speed (adjust as needed)
 
-        // Normalize direction to maintain consistent speed
-        direction.normalize();
+    if (keys.w) direction.z -= 1;
+    if (keys.s) direction.z += 1;
+    if (keys.a) direction.x -= 1;
+    if (keys.d) direction.x += 1;
 
-        // Calculate the next position
-        const nextPosition = playerRef.current.position.clone().add(direction);
+    // Normalize direction to maintain consistent speed
+    direction.normalize();
 
-        // Check for collision before updating the position
-        if (!checkCollision(nextPosition)) {
-          playerRef.current.position.copy(nextPosition);
-        }
-      }
-    });
+    // Calculate the next position based on speed and delta time
+    const nextPosition = playerRef.current.position.clone().add(direction.multiplyScalar(speed * delta));
+
+    // Check for collision before updating the position
+    if (!checkCollision(nextPosition)) {
+      playerRef.current.position.copy(nextPosition);
+    }
+  }
+});
 
     return React.createElement('mesh', { ref: playerRef, position: [1, 0.5, -1] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
