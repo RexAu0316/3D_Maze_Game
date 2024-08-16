@@ -69,7 +69,7 @@ const checkCollision = (nextPosition) => {
       }
     });
 
-    return React.createElement('mesh', { ref: playerRef, position: [-7, 0.5, -5] },
+    return React.createElement('mesh', { ref: playerRef, position: [0, 0.5, 0] },
       React.createElement('boxGeometry', { args: [0.5, 1, 0.5] }),
       React.createElement('meshStandardMaterial', { color: 'blue' })
     );
