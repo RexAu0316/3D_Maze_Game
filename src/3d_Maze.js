@@ -30,24 +30,28 @@ window.initGame = (React, assetsUrl) => {
   }, []);
 
   const checkCollision = (nextPosition) => {
-    const playerBox = new THREE.Box3().setFromCenterAndSize(
-      nextPosition,
-      new THREE.Vector3(0.5, 1, 0.5)
-    );
+  const playerBox = new THREE.Box3().setFromCenterAndSize(
+    nextPosition,
+    new THREE.Vector3(0.5, 1, 0.5)
+  );
 
-    for (let wall of walls) {
-      if (wall) { // Check if wall is defined
-        const wallBox = new THREE.Box3().setFromCenterAndSize(
-          wall,
-          new THREE.Vector3(1, 1, 1)
-        );
-        if (playerBox.intersectsBox(wallBox)) {
-          return true;
-        }
+  console.log("Checking collisions for position:", nextPosition);
+
+  for (let wall of walls) {
+    if (wall) { // Check if wall is defined
+      const wallBox = new THREE.Box3().setFromCenterAndSize(
+        wall,
+        new THREE.Vector3(1, 1, 1)
+      );
+      console.log("Checking against wall at position:", wall);
+      if (playerBox.intersectsBox(wallBox)) {
+        console.log("Collision detected with wall at position:", wall);
+        return true;
       }
     }
-    return false;
-  };
+  }
+  return false;
+};
 
   useFrame((state) => {
     if (playerRef.current) {
