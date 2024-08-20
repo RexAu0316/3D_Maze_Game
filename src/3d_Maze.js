@@ -4,8 +4,9 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
 
   function Player({ playerRef, walls }) {
-  const speed = 0.005; // Movement speed
+  const speed = 5; // Movement speed (adjust as necessary)
   const keys = useRef({ w: false, a: false, s: false, d: false });
+  const targetPosition = useRef(new THREE.Vector3());
 
   const handleKeyDown = (event) => {
     if (keys.current.hasOwnProperty(event.key)) {
@@ -58,15 +59,16 @@ window.initGame = (React, assetsUrl) => {
       if (keys.current.a) direction.x -= speed * delta;
       if (keys.current.d) direction.x += speed * delta;
 
-      // Normalize direction to maintain consistent speed
+      // Normalize the direction to maintain consistent speed
       direction.normalize();
 
       // Calculate the next position
-      const nextPosition = playerRef.current.position.clone().add(direction);
+      targetPosition.current.copy(playerRef.current.position).add(direction);
 
       // Check for collision before updating the position
-      if (!checkCollision(nextPosition)) {
-        playerRef.current.position.copy(nextPosition);
+      if (!checkCollision(targetPosition.current)) {
+        // Use lerp for smooth movement
+        playerRef.current.position.lerp(targetPosition.current, 0.1); // Adjust lerp factor for smoother movement
       }
     }
   });
