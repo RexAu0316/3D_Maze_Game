@@ -119,47 +119,76 @@ window.initGame = (React, assetsUrl) => {
     ];
 
     const walls = [];
+    const collectibles = [];
     const wallHeight = 1;
     const wallThickness = 1;
 
-    mazeLayout.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell === 1) {
-          const wallPosition = new THREE.Vector3(colIndex, wallHeight / 2, -rowIndex);
-          walls.push(wallPosition); // Store wall positions
-          const wall = React.createElement('mesh', {
-            position: wallPosition.toArray(),
-            key: `wall-${rowIndex}-${colIndex}`
-          },
-            React.createElement('boxGeometry', { args: [wallThickness, wallHeight, wallThickness] }),
-            React.createElement('meshStandardMaterial', { color: 'gray' })
-          );
-        }
-      });
+ mazeLayout.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            const wallPosition = new THREE.Vector3(colIndex, wallHeight / 2, -rowIndex);
+            if (cell === 1) {
+                walls.push(wallPosition);
+            } else if (cell === 0 && Math.random() < 0.1) { // Randomly place collectibles
+                const collectiblePosition = wallPosition.clone().add(new THREE.Vector3(0, 0.5, 0));
+                collectibles.push(collectiblePosition);
+            }
+        });
     });
 
-    return walls;
-  }
+    return { walls, collectibles };
+}
 
-  function GameScene() {
-    const playerRef = useRef(); 
-    const walls = createMaze(); // Generate maze walls
+function GameScene() {
+    const playerRef = useRef();
+    const [score, setScore] = React.useState(0); // Initialize score state
+    const { walls, collectibles } = createMaze(); // Generate maze walls and collectibles
+
+    const handleCollectibleCollision = (playerBox, collectible) => {
+        const collectibleBox = new THREE.Box3().setFromCenterAndSize(
+            collectible,
+            new THREE.Vector3(0.5, 0.5, 0.5)
+        );
+        return playerBox.intersectsBox(collectibleBox);
+    };
+
+    useFrame(() => {
+        if (playerRef.current) {
+            const playerBox = new THREE.Box3().setFromCenterAndSize(
+                playerRef.current.position,
+                new THREE.Vector3(0.5, 1, 0.5)
+            );
+
+            collectibles.forEach((collectible, index) => {
+                if (handleCollectibleCollision(playerBox, collectible)) {
+                    setScore((prevScore) => prevScore + 1); // Increment the score
+                    collectibles.splice(index, 1); // Remove the collectible
+                }
+            });
+        }
+    });
 
     return React.createElement(
-      React.Fragment,
-      null,
-      React.createElement('ambientLight', { intensity: 0.5 }),
-      React.createElement('pointLight', { position: [10, 10, 10] }),
-      React.createElement(Player, { playerRef, walls }), // Pass walls to Player
-      React.createElement(CameraFollow, { playerRef }),
-      ...walls.map((position, index) => (
-        React.createElement('mesh', { position: position.toArray(), key: `wall-${index}` },
-          React.createElement('boxGeometry', { args: [1, 1, 1] }),
-          React.createElement('meshStandardMaterial', { color: 'gray' })
-        )
-      ))
+        React.Fragment,
+        null,
+        React.createElement('ambientLight', { intensity: 0.5 }),
+        React.createElement('pointLight', { position: [10, 10, 10] }),
+        React.createElement(Player, { playerRef, walls }),
+        React.createElement(CameraFollow, { playerRef }),
+        ...walls.map((position, index) => (
+            React.createElement('mesh', { position: position.toArray(), key: `wall-${index}` },
+                React.createElement('boxGeometry', { args: [1, 1, 1] }),
+                React.createElement('meshStandardMaterial', { color: 'gray' })
+            )
+        )),
+        ...collectibles.map((position, index) => (
+            React.createElement('mesh', { position: position.toArray(), key: `collectible-${index}` },
+                React.createElement('sphereGeometry', { args: [0.25, 16, 16] }),
+                React.createElement('meshStandardMaterial', { color: 'gold' })
+            )
+        )),
+        React.createElement('text', { position: [-8, 5, 0], scale: [1, 1, 1], fontSize: 0.5 }, `Score: ${score}`)
     );
-  }
+}
 
   return GameScene;
 };
